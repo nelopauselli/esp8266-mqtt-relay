@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <FS.h> // Include the SPIFFS library
 
 extern "C" {
 #include "user_interface.h"
@@ -72,18 +71,6 @@ void relay2_info(const char *message)
 void relay2_change()
 {
     relay2_info("/home/bathroom/relay2/change");
-}
-
-void initSPIFFS()
-{
-    if (!SPIFFS.begin())
-    {
-        Logger.error("Error in SPIFFS");
-    }
-    else
-    {
-        Logger.trace("SPIFFS ok");
-    }
 }
 
 void initLogger()
@@ -286,7 +273,6 @@ void setup()
 {
     traceFreeMemory();
 
-    initSPIFFS();
     initLogger();
     initHardware();
 
