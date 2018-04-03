@@ -5,12 +5,7 @@ extern "C" {
 #include "user_interface.h"
 }
 
-// MQTT
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
-WiFiClient espClient;
-PubSubClient client(espClient);
-// END MQTT
+#include "MqttAdapter.h"
 
 #include "Logger.h"
 #include "Appenders/SerialAppender.cpp"
@@ -43,21 +38,22 @@ Button *button1;
 Button *button2;
 
 TelnetServer *telnetServer = NULL;
+MqttAdapter *mqtt = NULL;
 
 void button1_pressed()
 {
-    client.publish("/home/bathroom/button1/pressed", "");
+    mqtt->publish("/home/bathroom/button1/pressed", "");
 }
 
 void button2_pressed()
 {
-    client.publish("/home/bathroom/button2/pressed", "");
+    mqtt->publish("/home/bathroom/button2/pressed", "");
 }
 
 void relay1_info(const char *message)
 {
     char *json = relay1->toJSON();
-    client.publish(message, json);
+    mqtt->publish(message, json);
     delete json;
 }
 
@@ -69,7 +65,7 @@ void relay1_change()
 void relay2_info(const char *message)
 {
     char *json = relay2->toJSON();
-    client.publish(message, json);
+    mqtt->publish(message, json);
     delete json;
 }
 
@@ -105,7 +101,7 @@ void initHardware()
 {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
-    
+
     Logger.trace("Init relays...");
     delay(10);
 
@@ -139,7 +135,7 @@ void initClock()
  * MQTT
  * 
  **/
-void callbackDevice()
+void device_search()
 {
     char *topicBase = Settings.readMqttTopicBase();
 
@@ -169,7 +165,7 @@ void callbackDevice()
     }
     strcat(definition, "]}");
 
-    client.publish("/devices/found", definition);
+    mqtt->publish("/devices/found", definition);
 
     delete topicBase;
 }
@@ -187,7 +183,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     if (strcmp(topic, "/devices/search") == 0)
     {
-        callbackDevice();
+        device_search();
     }
     else if (strcmp(topic, "/home/bathroom/relay1/status") == 0)
     {
@@ -240,41 +236,18 @@ bool reconnect()
             const char *mqttPassword = password.c_str();
             Logger.debug(mqttPassword);
 
-            int count = 0;
-            // Loop until we're reconnected
-            while (!client.connected())
+            if (mqtt->connect(mqttUserName, mqttPassword))
             {
-                Serial.print("Attempting MQTT connection...");
-                // Attempt to connect
-                Logger.debug("connecting using " + String(mqttUserName));
-                if (client.connect("ESP8266-Timer-Relay", mqttUserName, mqttPassword))
-                {
-                    Serial.println("connected");
-                    // Once connected, publish an announcement: I exist!...
-                    callbackDevice();
-                    // ... and subscribe
-                    client.subscribe("/devices/search");
-                    client.subscribe("/home/bathroom/relay1/status");
-                    client.subscribe("/home/bathroom/relay1/on");
-                    client.subscribe("/home/bathroom/relay1/off");
-                    client.subscribe("/home/bathroom/relay2/status");
-                    client.subscribe("/home/bathroom/relay2/on");
-                    client.subscribe("/home/bathroom/relay2/off");
-                }
-                else
-                {
-                    Serial.print("failed, rc=");
-                    Serial.print(client.state());
-                    Serial.println(" try again in 5 seconds");
-                    // Wait 5 seconds before retrying
-                    delay(5000);
-                    count++;
+                mqtt->setCallback(callback);
+                mqtt->subscribe("/home/bathroom/relay1/status");
+                mqtt->subscribe("/home/bathroom/relay1/on");
+                mqtt->subscribe("/home/bathroom/relay1/off");
+                mqtt->subscribe("/home/bathroom/relay2/status");
+                mqtt->subscribe("/home/bathroom/relay2/on");
+                mqtt->subscribe("/home/bathroom/relay2/off");
 
-                    if (count > 5)
-                        return false;
-                }
+                return true;
             }
-            return true;
         }
     }
     return false;
@@ -301,8 +274,7 @@ bool initMQTT()
             uint16_t mqttPort = serverAndPort.substring(indexOfSeparator + 1).toInt();
             Logger.debug(String(mqttPort));
 
-            client.setServer(mqttServer, mqttPort);
-            client.setCallback(callback);
+            mqtt = new MqttAdapter("/cullen/baño2", mqttServer, mqttPort);
 
             return reconnect();
         }
@@ -344,11 +316,11 @@ void setup()
 
 void loopMQTT()
 {
-    if (!client.connected())
+    if (!mqtt->connected())
     {
         reconnect();
     }
-    client.loop();
+    mqtt->loop();
 }
 
 long lastProcess = 0;
@@ -415,12 +387,12 @@ void processDht()
         }
         else
         {
-            float humidityAvg = humidity / (dhtIndex+1);
-            float temperatureAvg = temperature / (dhtIndex+1);
+            float humidityAvg = humidity / (dhtIndex + 1);
+            float temperatureAvg = temperature / (dhtIndex + 1);
 
             String message = "{\"humidity\": " + String(humidityAvg) +
                              ", \"temperature\": " + String(temperatureAvg) + "}";
-            client.publish("/home/bathroom/dht", message.c_str());
+            mqtt->publish("/home/bathroom/dht", message.c_str());
 
             humidity = 0;
             temperature = 0;
