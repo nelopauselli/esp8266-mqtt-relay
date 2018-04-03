@@ -74,9 +74,9 @@ void initHardware()
 
     Logger.trace("Init buttons...");
     
-    button1 = new Button(BUTTON1, "boton/azul");
+    button1 = new Button(BUTTON1, "boton-azul");
     button1->attach(relay1);
-    button2 = new Button(BUTTON2, "boton/rojo");
+    button2 = new Button(BUTTON2, "boton-rojo");
     button2->attach(relay2);
 
     dht.setup(D2);
