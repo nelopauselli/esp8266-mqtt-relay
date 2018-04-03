@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "Logger.h"
+#include "MqttAdapter.h"
 #include "SoftClockTime.h"
 
 class Relay
@@ -15,16 +16,6 @@ class Relay
 
 		pinMode(_pin, OUTPUT);
 		digitalWrite(_pin, HIGH);
-	}
-
-	void onTurnedOn(void (*callback)())
-	{
-		_onTurnedOn = callback;
-	}
-
-	void onTurnedOff(void (*callback)())
-	{
-		_onTurnedOff = callback;
 	}
 
 	const char *name()
@@ -56,8 +47,8 @@ class Relay
 		_offAt->add(TimeSpan{0, 0, 10});
 		digitalWrite(_pin, LOW);
 
-		if(_onTurnedOn!=NULL)
-			_onTurnedOn();
+		if (_mqtt != NULL)
+			_mqtt->publish(_name, "state=on");
 	}
 
 	void off()
@@ -68,8 +59,8 @@ class Relay
 		_offAt = NULL;
 		digitalWrite(_pin, HIGH);
 
-		if(_onTurnedOff!=NULL)
-			_onTurnedOff();
+		if (_mqtt != NULL)
+			_mqtt->publish(_name, "state=off");
 	}
 
 	bool process()
@@ -132,12 +123,16 @@ class Relay
 		return buffer;
 	}
 
+	void attach(MqttAdapter *mqtt)
+	{
+		_mqtt = mqtt;
+	}
+
   private:
 	const char *_name;
 	uint8_t _pin;
 	Time *_offAt = NULL;
-	void (*_onTurnedOn)() = NULL;
-	void (*_onTurnedOff)() = NULL;
+	MqttAdapter *_mqtt;
 };
 
 #endif

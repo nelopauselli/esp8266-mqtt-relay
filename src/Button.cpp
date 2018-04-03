@@ -3,21 +3,20 @@
 
 #include <Arduino.h>
 #include "Logger.h"
+#include "MqttAdapter.h"
+#include "Relay.cpp"
 
 class Button
 {
   public:
-	Button(uint8_t pin)
+	Button(uint8_t pin, const char *name)
 	{
 		_pin = pin;
-		pinMode(_pin, INPUT_PULLUP);
+		_name = name;
 		
-		_lastPush = 0;
-	}
+		pinMode(_pin, INPUT_PULLUP);
 
-	void onPressed(void (*callback)())
-	{
-		_onPressed = callback;
+		_lastPush = 0;
 	}
 
 	void process()
@@ -29,14 +28,33 @@ class Button
 		if (state)
 		{
 			_lastPush = millis();
-			_onPressed();
+
+			if (_mqtt != NULL)
+				_mqtt->publish(_name, "pressed");
+
+			if (_relay != NULL)
+				_relay->toggle();
 		}
+	}
+
+	void attach(MqttAdapter *mqtt)
+	{
+		_mqtt = mqtt;
+	}
+
+	void attach(Relay *relay)
+	{
+		_relay = relay;
 	}
 
   private:
 	uint8_t _pin;
+	const char *_name;
+
 	long _lastPush;
-	void (*_onPressed)() = NULL;
+
+	Relay *_relay;
+	MqttAdapter *_mqtt;
 };
 
 #endif

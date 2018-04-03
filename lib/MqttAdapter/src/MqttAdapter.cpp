@@ -65,8 +65,9 @@ void MqttAdapter::subscribe(const char *topic)
 
 void MqttAdapter::publish(const char *subtopic, const char *message)
 {
-  char *target = new char[strlen(_name)+strlen(subtopic)+1];
+  char *target = new char[strlen(_name)+1+strlen(subtopic)+1];
   strcpy(target, _name);
+  strcat(target, "/");
   strcat(target, subtopic);
   
   client.publish(target, message);

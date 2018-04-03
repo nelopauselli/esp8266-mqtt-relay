@@ -39,37 +39,11 @@ Button *button2;
 TelnetServer *telnetServer = NULL;
 MqttAdapter *mqtt = NULL;
 
-void button1_pressed()
-{
-    Logger.trace("Button 1 was pressed");
-    mqtt->publish("/button1", "pressed");
-
-    relay1->toggle();
-}
-
-void button2_pressed()
-{
-    Logger.trace("Button 2 was pressed");
-    mqtt->publish("/button2", "pressed");
-
-    relay2->toggle();
-}
-
 void relay1_info(const char *message)
 {
     char *json = relay1->toJSON();
     mqtt->publish(message, json);
     delete json;
-}
-
-void relay1_on()
-{
-    mqtt->publish("/relay1", "state=on");
-}
-
-void relay1_off()
-{
-    mqtt->publish("/relay1", "state=off");
 }
 
 void relay2_info(const char *message)
@@ -79,17 +53,6 @@ void relay2_info(const char *message)
     delete json;
 }
 
-void relay2_on()
-{
-    mqtt->publish("/relay2", "state=on");
-}
-
-void relay2_off()
-{
-    mqtt->publish("/relay2", "state=off");
-}
-
-
 void initLogger()
 {
     Logger.cleanDebug();
@@ -97,8 +60,6 @@ void initLogger()
     Logger.debugging(false);
 
     Logger.add(new SerialAppender());
-
-    delay(10);
 }
 
 void initHardware()
@@ -107,22 +68,16 @@ void initHardware()
     digitalWrite(LED_BUILTIN, HIGH);
 
     Logger.trace("Init relays...");
-    delay(10);
 
     relay1 = new Relay(RELAY1, "extractor");
-    relay1->onTurnedOn(relay1_on);
-    relay1->onTurnedOff(relay1_off);
     relay2 = new Relay(RELAY2, "toallero");
-    relay2->onTurnedOn(relay2_on);
-    relay2->onTurnedOff(relay2_off);
 
     Logger.trace("Init buttons...");
-    delay(10);
-
-    button1 = new Button(BUTTON1);
-    button1->onPressed(button1_pressed);
-    button2 = new Button(BUTTON2);
-    button2->onPressed(button2_pressed);
+    
+    button1 = new Button(BUTTON1, "boton/azul");
+    button1->attach(relay1);
+    button2 = new Button(BUTTON2, "boton/rojo");
+    button2->attach(relay2);
 
     dht.setup(D2);
 }
@@ -280,6 +235,11 @@ bool initMQTT()
 
             mqtt = new MqttAdapter("/cullen/baño2", mqttServer, mqttPort);
 
+            relay1->attach(mqtt);
+            button1->attach(mqtt);
+            relay2->attach(mqtt);
+            button2->attach(mqtt);
+
             return reconnect();
         }
     }
@@ -386,7 +346,7 @@ void processDht()
 
             String message = "{\"humidity\": " + String(humidityAvg) +
                              ", \"temperature\": " + String(temperatureAvg) + "}";
-            mqtt->publish("/dht", message.c_str());
+            mqtt->publish("dht", message.c_str());
 
             humidity = 0;
             temperature = 0;
@@ -412,4 +372,6 @@ void loop(void)
         traceMemoryLeak(&processRelays);
         lastProcess = millis();
     }
+
+    delay(100);
 }
