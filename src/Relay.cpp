@@ -48,7 +48,7 @@ class Relay
 		digitalWrite(_pin, LOW);
 
 		if (_mqtt != NULL)
-			_mqtt->publish(_name, "state=on");
+			_mqtt->publish(_name, "state on");
 	}
 
 	void off()
@@ -60,7 +60,19 @@ class Relay
 		digitalWrite(_pin, HIGH);
 
 		if (_mqtt != NULL)
-			_mqtt->publish(_name, "state=off");
+			_mqtt->publish(_name, "state off");
+	}
+
+	void publishState()
+	{
+		if (_mqtt != NULL)
+		{
+			int state = !digitalRead(_pin);
+			if (state)
+				_mqtt->publish(_name, "state on");
+			else
+				_mqtt->publish(_name, "state off");
+		}
 	}
 
 	bool process()
@@ -89,38 +101,14 @@ class Relay
 		return ret;
 	}
 
-	char *toJSON()
+	void invoke(char *payload)
 	{
-		bool state = !digitalRead(_pin);
-
-		char *buffer = new char[255];
-		strcpy(buffer, "{\"name\": \"");
-		strcat(buffer, _name);
-		strcat(buffer, "\", ");
-		strcat(buffer, "\"actions\": [");
-		if (state)
-			strcat(buffer, "{\"name\": \"Apagar\", \"path\": \"/off\"}");
-		else
-			strcat(buffer, "{\"name\": \"Prender\", \"path\": \"/on\"}");
-		strcat(buffer, "], ");
-		strcat(buffer, "\"status\": \"");
-		strcat(buffer, state ? "on" : "off");
-		strcat(buffer, "\", ");
-		strcat(buffer, "\"statusText\": ");
-		if (state)
-		{
-			strcat(buffer, "\"se apagará a las ");
-			if (_offAt != NULL)
-				strcat(buffer, _offAt->toCharArray());
-			strcat(buffer, " GMT\"");
-		}
-		else
-		{
-			strcat(buffer, "\"apagado\"");
-		}
-		strcat(buffer, "}");
-
-		return buffer;
+		if (strcmp(payload, "turn on") == 0)
+			on();
+		else if (strcmp(payload, "turn off") == 0)
+			off();
+		else if (strcmp(payload, "state") == 0)
+			publishState();
 	}
 
 	void attach(MqttAdapter *mqtt)

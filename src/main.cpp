@@ -39,20 +39,6 @@ Button *button2;
 TelnetServer *telnetServer = NULL;
 MqttAdapter *mqtt = NULL;
 
-void relay1_info(const char *message)
-{
-    char *json = relay1->toJSON();
-    mqtt->publish(message, json);
-    delete json;
-}
-
-void relay2_info(const char *message)
-{
-    char *json = relay2->toJSON();
-    mqtt->publish(message, json);
-    delete json;
-}
-
 void initLogger()
 {
     Logger.cleanDebug();
@@ -73,7 +59,7 @@ void initHardware()
     relay2 = new Relay(RELAY2, "toallero");
 
     Logger.trace("Init buttons...");
-    
+
     button1 = new Button(BUTTON1, "boton-azul");
     button1->attach(relay1);
     button2 = new Button(BUTTON2, "boton-rojo");
@@ -144,29 +130,15 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         device_search();
     }
-    else if (strcmp(topic, "/home/bathroom/relay1/status") == 0)
+
+    int topicLen = strlen(topic);
+    if (strcmp(topic + strlen(topic) - strlen("/relay1"), "/relay1") == 0)
     {
-        relay1_info(message);
+        relay1->invoke(message);
     }
-    else if (strcmp(topic, "/home/bathroom/relay1/on") == 0)
+    else if (strcmp(topic + strlen(topic) - strlen("/relay2"), "/relay2") == 0)
     {
-        relay1->on();
-    }
-    else if (strcmp(topic, "/home/bathroom/relay1/off") == 0)
-    {
-        relay1->off();
-    }
-    else if (strcmp(topic, "/home/bathroom/relay2/status") == 0)
-    {
-        relay2_info(message);
-    }
-    else if (strcmp(topic, "/home/bathroom/relay2/on") == 0)
-    {
-        relay2->on();
-    }
-    else if (strcmp(topic, "/home/bathroom/relay2/off") == 0)
-    {
-        relay2->off();
+        relay2->invoke(message);
     }
 
     delete message;
@@ -198,13 +170,6 @@ bool reconnect()
             if (mqtt->connect(mqttUserName, mqttPassword))
             {
                 mqtt->setCallback(callback);
-                mqtt->subscribe("/home/bathroom/relay1/status");
-                mqtt->subscribe("/home/bathroom/relay1/on");
-                mqtt->subscribe("/home/bathroom/relay1/off");
-                mqtt->subscribe("/home/bathroom/relay2/status");
-                mqtt->subscribe("/home/bathroom/relay2/on");
-                mqtt->subscribe("/home/bathroom/relay2/off");
-
                 return true;
             }
         }

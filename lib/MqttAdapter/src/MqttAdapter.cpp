@@ -45,6 +45,12 @@ bool MqttAdapter::connect(const char *userName, const char *password)
         return false;
     }
   }
+
+  char *topic = new char[strlen(_name)+3];
+  strcpy(topic, _name);
+  strcat(topic, "/#");
+  client.subscribe(topic);
+
   return true;
 }
 
