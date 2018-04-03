@@ -69,7 +69,7 @@ class Relay
 		digitalWrite(_pin, HIGH);
 
 		if(_onTurnedOff!=NULL)
-			_onTurnedOn();
+			_onTurnedOff();
 	}
 
 	bool process()

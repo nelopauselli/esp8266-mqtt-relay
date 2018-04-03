@@ -42,7 +42,7 @@ MqttAdapter *mqtt = NULL;
 void button1_pressed()
 {
     Logger.trace("Button 1 was pressed");
-    mqtt->publish("/home/bathroom/button1/pressed", "");
+    mqtt->publish("/button1", "pressed");
 
     relay1->toggle();
 }
@@ -50,7 +50,7 @@ void button1_pressed()
 void button2_pressed()
 {
     Logger.trace("Button 2 was pressed");
-    mqtt->publish("/home/bathroom/button2/pressed", "");
+    mqtt->publish("/button2", "pressed");
 
     relay2->toggle();
 }
@@ -62,9 +62,14 @@ void relay1_info(const char *message)
     delete json;
 }
 
-void relay1_change()
+void relay1_on()
 {
-    relay1_info("/home/bathroom/relay1/change");
+    mqtt->publish("/relay1", "state=on");
+}
+
+void relay1_off()
+{
+    mqtt->publish("/relay1", "state=off");
 }
 
 void relay2_info(const char *message)
@@ -74,10 +79,16 @@ void relay2_info(const char *message)
     delete json;
 }
 
-void relay2_change()
+void relay2_on()
 {
-    relay2_info("/home/bathroom/relay2/change");
+    mqtt->publish("/relay2", "state=on");
 }
+
+void relay2_off()
+{
+    mqtt->publish("/relay2", "state=off");
+}
+
 
 void initLogger()
 {
@@ -99,11 +110,11 @@ void initHardware()
     delay(10);
 
     relay1 = new Relay(RELAY1, "extractor");
-    relay1->onTurnedOn(relay1_change);
-    relay1->onTurnedOff(relay1_change);
+    relay1->onTurnedOn(relay1_on);
+    relay1->onTurnedOff(relay1_off);
     relay2 = new Relay(RELAY2, "toallero");
-    relay2->onTurnedOn(relay2_change);
-    relay2->onTurnedOff(relay2_change);
+    relay2->onTurnedOn(relay2_on);
+    relay2->onTurnedOff(relay2_off);
 
     Logger.trace("Init buttons...");
     delay(10);
@@ -375,7 +386,7 @@ void processDht()
 
             String message = "{\"humidity\": " + String(humidityAvg) +
                              ", \"temperature\": " + String(temperatureAvg) + "}";
-            mqtt->publish("/home/bathroom/dht", message.c_str());
+            mqtt->publish("/dht", message.c_str());
 
             humidity = 0;
             temperature = 0;
