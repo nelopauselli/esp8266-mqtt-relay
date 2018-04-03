@@ -20,10 +20,10 @@ class Button
 		_onPressed = callback;
 	}
 
-	bool pushed()
+	void process()
 	{
 		if (_lastPush + 2000 > millis())
-			return false; // if button was pushed in last 2 seconds, we return false
+			return; // if button was pushed in last 2 seconds, we return
 
 		bool state = !digitalRead(_pin);
 		if (state)
@@ -31,8 +31,6 @@ class Button
 			_lastPush = millis();
 			_onPressed();
 		}
-		
-		return state;
 	}
 
   private:

@@ -41,12 +41,18 @@ MqttAdapter *mqtt = NULL;
 
 void button1_pressed()
 {
+    Logger.trace("Button 1 was pressed");
     mqtt->publish("/home/bathroom/button1/pressed", "");
+
+    relay1->toggle();
 }
 
 void button2_pressed()
 {
+    Logger.trace("Button 2 was pressed");
     mqtt->publish("/home/bathroom/button2/pressed", "");
+
+    relay2->toggle();
 }
 
 void relay1_info(const char *message)
@@ -93,11 +99,11 @@ void initHardware()
     delay(10);
 
     relay1 = new Relay(RELAY1, "extractor");
-    relay1->setCallbackOn(relay1_change);
-    relay1->setCallbackOff(relay1_change);
+    relay1->onTurnedOn(relay1_change);
+    relay1->onTurnedOff(relay1_change);
     relay2 = new Relay(RELAY2, "toallero");
-    relay2->setCallbackOn(relay2_change);
-    relay2->setCallbackOff(relay2_change);
+    relay2->onTurnedOn(relay2_change);
+    relay2->onTurnedOff(relay2_change);
 
     Logger.trace("Init buttons...");
     delay(10);
@@ -312,17 +318,8 @@ void loopMQTT()
 long lastProcess = 0;
 void processButtons()
 {
-    if (button1->pushed())
-    {
-        Logger.trace("Button 1 was pressed");
-        relay1->toggle();
-    }
-
-    if (button2->pushed())
-    {
-        Logger.trace("Button 2 was pressed");
-        relay2->toggle();
-    }
+    button1->process();
+    button2->process();
 }
 
 void processRelays()

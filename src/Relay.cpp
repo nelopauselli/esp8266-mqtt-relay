@@ -17,14 +17,14 @@ class Relay
 		digitalWrite(_pin, HIGH);
 	}
 
-	void setCallbackOn(void (*callback)())
+	void onTurnedOn(void (*callback)())
 	{
-		_callbackOn = callback;
+		_onTurnedOn = callback;
 	}
 
-	void setCallbackOff(void (*callback)())
+	void onTurnedOff(void (*callback)())
 	{
-		_callbackOff = callback;
+		_onTurnedOff = callback;
 	}
 
 	const char *name()
@@ -56,8 +56,8 @@ class Relay
 		_offAt->add(TimeSpan{0, 0, 10});
 		digitalWrite(_pin, LOW);
 
-		if(_callbackOn!=NULL)
-			_callbackOn();
+		if(_onTurnedOn!=NULL)
+			_onTurnedOn();
 	}
 
 	void off()
@@ -68,8 +68,8 @@ class Relay
 		_offAt = NULL;
 		digitalWrite(_pin, HIGH);
 
-		if(_callbackOff!=NULL)
-			_callbackOff();
+		if(_onTurnedOff!=NULL)
+			_onTurnedOn();
 	}
 
 	bool process()
@@ -136,8 +136,8 @@ class Relay
 	const char *_name;
 	uint8_t _pin;
 	Time *_offAt = NULL;
-	void (*_callbackOn)() = NULL;
-	void (*_callbackOff)() = NULL;
+	void (*_onTurnedOn)() = NULL;
+	void (*_onTurnedOff)() = NULL;
 };
 
 #endif
