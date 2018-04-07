@@ -13,6 +13,7 @@ class WifiAdapter_t
 	IPAddress getIP();
 	void addAP(const char *ssid, const char *password);
 	bool connect();
+	void disconnect();
 	void startAsAccessPoint(const char *ssid);
 	int32_t getRSSI(const char *target_ssid);
 	String listWifiAsJson();

@@ -151,28 +151,36 @@ bool reconnect()
     {
         Logger.debug("MQTT.ConnectionString: " + String(connectionString));
 
-        int indexOfArroba = connectionString.indexOf('@');
-        if (indexOfArroba != -1)
+        // int indexOfArroba = connectionString.indexOf('@');
+        // if (indexOfArroba != -1)
+        // {
+        //     String usernameAndPassword = connectionString.substring(7, indexOfArroba);
+        //     Logger.debug(usernameAndPassword);
+
+        //     int indexOfSeparator = usernameAndPassword.indexOf(':');
+        //     Logger.debug(String(indexOfSeparator));
+        //     String username = usernameAndPassword.substring(0, indexOfSeparator);
+        //     const char *mqttUserName = username.c_str();
+        //     Logger.debug(mqttUserName);
+
+        //     String password = usernameAndPassword.substring(indexOfSeparator + 1);
+        //     const char *mqttPassword = password.c_str();
+        //     Logger.debug(mqttPassword);
+
+        //     if (mqtt->connect(mqttUserName, mqttPassword))
+        //     {
+        //         mqtt->setCallback(callback);
+        //         return true;
+        //     }
+        // }
+        // else
+        // {
+        if (mqtt->connect())
         {
-            String usernameAndPassword = connectionString.substring(7, indexOfArroba);
-            Logger.debug(usernameAndPassword);
-
-            int indexOfSeparator = usernameAndPassword.indexOf(':');
-            Logger.debug(String(indexOfSeparator));
-            String username = usernameAndPassword.substring(0, indexOfSeparator);
-            const char *mqttUserName = username.c_str();
-            Logger.debug(mqttUserName);
-
-            String password = usernameAndPassword.substring(indexOfSeparator + 1);
-            const char *mqttPassword = password.c_str();
-            Logger.debug(mqttPassword);
-
-            if (mqtt->connect(mqttUserName, mqttPassword))
-            {
-                mqtt->setCallback(callback);
-                return true;
-            }
+            mqtt->setCallback(callback);
+            return true;
         }
+        //     }
     }
     return false;
 }
@@ -246,7 +254,14 @@ void loopMQTT()
 {
     if (!mqtt->connected())
     {
-        reconnect();
+        if (!reconnect())
+        {
+            WifiAdapter.disconnect();
+            if (WifiAdapter.connect())
+            {
+                initMQTT();
+            }
+        }
     }
     mqtt->loop();
 }

@@ -8,6 +8,7 @@ class MqttAdapter
 public:
   MqttAdapter(const char *name, const char *server, int port);
   bool connect(const char *userName, const char *password);
+  bool connect();
   void setCallback(MQTT_CALLBACK_SIGNATURE);
   bool connected();
 

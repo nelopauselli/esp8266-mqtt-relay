@@ -52,6 +52,26 @@ bool WifiAdapter_t::connect()
 	return true;
 }
 
+void WifiAdapter_t::disconnect()
+{
+	WiFi.disconnect(true);
+	
+	int count = 0;
+	Logger.trace("disconnecting");
+	while (WiFi.status() != WL_DISCONNECTED)
+	{
+		count++;
+		if (count > 20)
+			return;
+		delay(100);
+	}
+
+	if (WiFi.status() == WL_DISCONNECTED)
+		Logger.trace("disconnected");
+	else
+		Logger.error("could not disconnect");
+}
+
 void WifiAdapter_t::startAsAccessPoint(const char *ssid)
 {
 	WiFi.mode(WIFI_AP);
