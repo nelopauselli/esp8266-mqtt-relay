@@ -3,6 +3,7 @@
 void SoftTimeClock_t::reset(uint32_t unixTime)
 {
 	_time = unixTime;
+	_time -= 3*3600; // GMT-3
 	_offsetStart = millis();
 }
 
