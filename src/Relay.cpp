@@ -47,8 +47,7 @@ class Relay
 		_offAt->add(TimeSpan{0, 0, 10});
 		digitalWrite(_pin, LOW);
 
-		if (_mqtt != NULL)
-			_mqtt->publish(_name, "state on");
+		publishState();
 	}
 
 	void off()
@@ -59,8 +58,7 @@ class Relay
 		_offAt = NULL;
 		digitalWrite(_pin, HIGH);
 
-		if (_mqtt != NULL)
-			_mqtt->publish(_name, "state off");
+		publishState();
 	}
 
 	void publishState()
@@ -69,9 +67,16 @@ class Relay
 		{
 			int state = !digitalRead(_pin);
 			if (state)
-				_mqtt->publish(_name, "state on");
+			{
+				char *message = new char[255];
+				strcpy(message, "state on until ");
+				strcat(message, _offAt->toCharArray());
+				_mqtt->publish(_name, message);
+			}
 			else
+			{
 				_mqtt->publish(_name, "state off");
+			}
 		}
 	}
 
@@ -109,6 +114,16 @@ class Relay
 			off();
 		else if (strcmp(payload, "state") == 0)
 			publishState();
+		else if (strcmp(payload, "+30m") == 0)
+		{
+			_offAt->add(TimeSpan{0, 0, 30});
+			publishState();
+		}
+		else if (strcmp(payload, "+1h") == 0)
+		{
+			_offAt->add(TimeSpan{0, 1, 00});
+			publishState();
+		}
 	}
 
 	void attach(MqttAdapter *mqtt)

@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+//#define DHT_ENABLED
+
 extern "C" {
 #include "user_interface.h"
 }
@@ -28,8 +30,10 @@ extern "C" {
 #define BUTTON2 3
 #endif
 
+#ifdef DHT_ENABLED
 #include <DHT.h>
 DHT dht;
+#endif
 
 Relay *relay1;
 Relay *relay2;
@@ -65,7 +69,9 @@ void initHardware()
     button2 = new Button(BUTTON2, "boton-rojo");
     button2->attach(relay2);
 
+#ifdef DHT_ENABLED
     dht.setup(D2);
+#endif
 }
 
 void initClock()
@@ -206,7 +212,7 @@ bool initMQTT()
             uint16_t mqttPort = serverAndPort.substring(indexOfSeparator + 1).toInt();
             Logger.debug(String(mqttPort));
 
-            mqtt = new MqttAdapter("/cullen/baño2", mqttServer, mqttPort);
+            mqtt = new MqttAdapter("/cullen/comedor", mqttServer, mqttPort);
 
             relay1->attach(mqtt);
             button1->attach(mqtt);
@@ -228,6 +234,7 @@ void setup()
 
     Logger.debug("Getting ChipID");
     Logger.trace("ChipID: " + String(ESP.getChipId()));
+
 
     WifiAdapter.addAP(Settings.readSSID(1), Settings.readPassword(1));
     WifiAdapter.addAP(Settings.readSSID(2), Settings.readPassword(2));
@@ -287,6 +294,7 @@ void processTelnet()
         telnetServer->process();
 }
 
+#ifdef DHT_ENABLED
 #define DHT_MAX 5
 float humidity;
 float temperature;
@@ -334,6 +342,7 @@ void processDht()
         }
     }
 }
+#endif
 
 void loop(void)
 {
@@ -345,7 +354,9 @@ void loop(void)
 
     traceMemoryLeak(&processButtons);
 
+#ifdef DHT_ENABLED
     processDht();
+#endif
 
     if (lastProcess + 5000 < millis())
     {
