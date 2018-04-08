@@ -59,8 +59,8 @@ void initHardware()
 
     Logger.trace("Init relays...");
 
-    relay1 = new Relay(RELAY1, "extractor");
-    relay2 = new Relay(RELAY2, "toallero");
+    relay1 = new Relay(RELAY1, "extractor", TimeSpan{1, 0, 0});
+    relay2 = new Relay(RELAY2, "toallero", TimeSpan{2, 0, 0});
 
     Logger.trace("Init buttons...");
 
@@ -212,7 +212,7 @@ bool initMQTT()
             uint16_t mqttPort = serverAndPort.substring(indexOfSeparator + 1).toInt();
             Logger.debug(String(mqttPort));
 
-            mqtt = new MqttAdapter("/cullen/comedor", mqttServer, mqttPort);
+            mqtt = new MqttAdapter("/cullen/baño2", mqttServer, mqttPort);
 
             relay1->attach(mqtt);
             button1->attach(mqtt);
@@ -234,7 +234,6 @@ void setup()
 
     Logger.debug("Getting ChipID");
     Logger.trace("ChipID: " + String(ESP.getChipId()));
-
 
     WifiAdapter.addAP(Settings.readSSID(1), Settings.readPassword(1));
     WifiAdapter.addAP(Settings.readSSID(2), Settings.readPassword(2));

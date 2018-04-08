@@ -9,10 +9,11 @@
 class Relay
 {
   public:
-	Relay(uint8_t pin, const char *name)
+	Relay(uint8_t pin, const char *name, TimeSpan duration)
 	{
 		_pin = pin;
 		_name = name;
+		_duration = duration;
 
 		pinMode(_pin, OUTPUT);
 		digitalWrite(_pin, HIGH);
@@ -44,7 +45,7 @@ class Relay
 			delete _offAt;
 
 		_offAt = SoftTimeClock.now();
-		_offAt->add(TimeSpan{0, 0, 10});
+		_offAt->add(_duration);
 		digitalWrite(_pin, LOW);
 
 		publishState();
@@ -116,12 +117,12 @@ class Relay
 			publishState();
 		else if (strcmp(payload, "+30m") == 0)
 		{
-			_offAt->add(TimeSpan{0, 0, 30});
+			_offAt->add(TimeSpan{0, 30, 0});
 			publishState();
 		}
 		else if (strcmp(payload, "+1h") == 0)
 		{
-			_offAt->add(TimeSpan{0, 1, 00});
+			_offAt->add(TimeSpan{1, 0, 0});
 			publishState();
 		}
 	}
@@ -135,6 +136,7 @@ class Relay
 	const char *_name;
 	uint8_t _pin;
 	Time *_offAt = NULL;
+	TimeSpan _duration;
 	MqttAdapter *_mqtt;
 };
 
