@@ -117,12 +117,14 @@ class Relay
 			publishState();
 		else if (strcmp(payload, "+30m") == 0)
 		{
-			_offAt->add(TimeSpan{0, 30, 0});
+			if (_offAt != NULL)
+				_offAt->add(TimeSpan{0, 30, 0});
 			publishState();
 		}
 		else if (strcmp(payload, "+1h") == 0)
 		{
-			_offAt->add(TimeSpan{1, 0, 0});
+			if (_offAt != NULL)
+				_offAt->add(TimeSpan{1, 0, 0});
 			publishState();
 		}
 	}
