@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-//#define DHT_ENABLED
+#define DHT_ENABLED
 
 extern "C" {
 #include "user_interface.h"
