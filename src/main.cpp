@@ -234,13 +234,14 @@ bool initMQTT()
 #ifdef OTA_ENABLED
 void checkForUpdates()
 {
-    Logger.debug(String("Searching firmware updates in http://") + Settings.readOtaIp() + ":" + Settings.readOtaPort() + Settings.readOtaPath() + "...");
+    Logger.trace(String("Searching firmware updates in http://") + Settings.readOtaIp() + ":" + Settings.readOtaPort() + Settings.readOtaPath());
+    Logger.debug(String("MD5 Checksum: ") + ESP.getSketchMD5());
 
     t_httpUpdate_return ret = ESPhttpUpdate.update(Settings.readOtaIp(), Settings.readOtaPort(), Settings.readOtaPath());
     switch (ret)
     {
     case HTTP_UPDATE_FAILED:
-        Logger.error(String("HTTP_UPDATE_FAILD Error") + String(ESPhttpUpdate.getLastError()) + ": " + ESPhttpUpdate.getLastErrorString());
+        Logger.error(String("HTTP_UPDATE_FAIL Error. ") + String(ESPhttpUpdate.getLastError()) + ": " + ESPhttpUpdate.getLastErrorString());
         break;
 
     case HTTP_UPDATE_NO_UPDATES:
