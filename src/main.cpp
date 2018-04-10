@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #define DHT_ENABLED
+#define OTA_ENABLED
 
 extern "C" {
 #include "user_interface.h"
@@ -33,6 +34,11 @@ extern "C" {
 #ifdef DHT_ENABLED
 #include <DHT.h>
 DHT dht;
+#endif
+
+#ifdef OTA_ENABLED
+#include <ESP8266HTTPClient.h>
+#include <ESP8266httpUpdate.h>
 #endif
 
 Relay *relay1;
@@ -225,6 +231,29 @@ bool initMQTT()
     return false;
 }
 
+#ifdef OTA_ENABLED
+void checkForUpdates()
+{
+    Logger.debug(String("Searching firmware updates in http://") + Settings.readOtaIp() + ":" + Settings.readOtaPort() + Settings.readOtaPath() + "...");
+
+    t_httpUpdate_return ret = ESPhttpUpdate.update(Settings.readOtaIp(), Settings.readOtaPort(), Settings.readOtaPath());
+    switch (ret)
+    {
+    case HTTP_UPDATE_FAILED:
+        Logger.error(String("HTTP_UPDATE_FAILD Error") + String(ESPhttpUpdate.getLastError()) + ": " + ESPhttpUpdate.getLastErrorString());
+        break;
+
+    case HTTP_UPDATE_NO_UPDATES:
+        Logger.trace("HTTP_UPDATE_NO_UPDATES");
+        break;
+
+    case HTTP_UPDATE_OK:
+        Logger.trace("HTTP_UPDATE_OK");
+        break;
+    }
+}
+#endif
+
 void setup()
 {
     traceFreeMemory();
@@ -240,6 +269,10 @@ void setup()
 
     if (WifiAdapter.connect())
     {
+#ifdef OTA_ENABLED
+        checkForUpdates();
+#endif
+
         initMQTT();
         initClock();
     }

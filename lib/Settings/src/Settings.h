@@ -16,6 +16,10 @@ public:
 	void writeMqttTopicBase(String value);
 	char *readMqttTopicBase();
 
+	char *readOtaIp();
+	int readOtaPort();
+	char *readOtaPath();
+
 private:
 	void write(int from, int to, String value);
 	char *read(int from, int to);

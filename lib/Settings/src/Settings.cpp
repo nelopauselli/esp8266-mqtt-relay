@@ -72,6 +72,19 @@ char *SettingsClass::readMqttTopicBase()
 	return read(MQTT_TOPIC_BASE_START, MQTT_TOPIC_BASE_END);
 }
 
+char *SettingsClass::readOtaIp(){
+	return "192.168.1.10";
+}
+
+int SettingsClass::readOtaPort(){
+	return 80;
+}
+
+char *SettingsClass::readOtaPath(){
+	return "/esp/update";
+}
+
+
 void SettingsClass::write(int from, int to, String value)
 {
 	if (value.length() > to - from)
