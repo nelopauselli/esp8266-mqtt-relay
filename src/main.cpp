@@ -76,7 +76,7 @@ void initHardware()
     button2->attach(relay2);
 
 #ifdef DHT_ENABLED
-    dht.setup(D2);
+    dht.setup(D1);
 #endif
 }
 
