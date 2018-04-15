@@ -112,16 +112,19 @@ char *SettingsClass::read(int from, int to)
 {
 	Logger.debug("Reading from " + String(from) + " to " + String(to) + ".");
 	char *buffer = new char[to - from];
-	for (int i = from; i < to; ++i)
+
+	int i;
+	for (i = from; i < to - 1; ++i)
 	{
 		char c = char(EEPROM.read(i));
-		Serial.print(c);
 		buffer[i - from] = c;
 
 		if (c == '\0')
 			break;
 	}
-	Serial.println();
+
+	if (i == to - 1)
+		buffer[i - from] = '\0';
 
 	Logger.debug("Value readed: " + String(buffer));
 	return buffer;
