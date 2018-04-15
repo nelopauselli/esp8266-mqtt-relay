@@ -1,6 +1,7 @@
 #include <TelnetServer.h>
 
 #include "Commands/PingPongCommand.cpp"
+#include "Commands/RestartCommand.cpp"
 #include "Commands/NotFoundCommand.cpp"
 #include "Commands/HelpCommand.cpp"
 
@@ -30,6 +31,7 @@ void TelnetServer::add(Command *command)
 void TelnetServer::start()
 {
     // complete the commands list with help and NotFound
+    add(new RestartCommand());
     add(new HelpCommand(commands));
     add(new NotFoundCommand());
 
