@@ -341,20 +341,18 @@ void processDht()
     {
         float h = dht.getHumidity();
         float t = dht.getTemperature();
+        timeSinceLastRead = millis();
 
         // Check if any reads failed and exit early (to try again).
         if (isnan(h) || isnan(t))
         {
             Logger.error("Failed to read from DHT sensor!");
-            timeSinceLastRead = 0;
             return;
         }
 
         humidity += h;
         temperature += t;
         Logger.debug("Humidity: " + String(h) + "%\t" + "Temperature: " + String(t) + " *C ");
-
-        timeSinceLastRead = millis();
 
         if (dhtIndex < DHT_MAX)
         {
