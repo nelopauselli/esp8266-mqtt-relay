@@ -6,8 +6,9 @@
 
 class Command
 {
-  public:
-    virtual bool process(char *line, WiFiClient *socket);
+public:
+  virtual bool process(char *line, WiFiClient *socket);
+  virtual void help(WiFiClient *socket);
 };
 
 #endif

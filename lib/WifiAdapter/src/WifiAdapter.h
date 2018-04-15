@@ -9,16 +9,18 @@
 
 class WifiAdapter_t
 {
-  public:
+public:
 	IPAddress getIP();
 	void addAP(const char *ssid, const char *password);
 	bool connect();
 	void disconnect();
 	void startAsAccessPoint(const char *ssid);
+	bool isAccessPoint();
+
 	int32_t getRSSI(const char *target_ssid);
 	String listWifiAsJson();
 
-  private:
+private:
 	bool _accessPoint = false;
 	ESP8266WiFiMulti _wifiMulti;
 };

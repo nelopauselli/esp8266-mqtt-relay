@@ -12,6 +12,10 @@ class NotFoundCommand : public Command
         delay(1);
         return true;
     }
+
+    void help(WiFiClient *socket) override
+    {
+    }
 };
 
 #endif

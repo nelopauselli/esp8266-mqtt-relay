@@ -47,7 +47,7 @@ bool WifiAdapter_t::connect()
 	_accessPoint = false;
 
 	Logger.trace("IP address:");
-	Logger.trace(getIP());
+	Logger.trace(getIP().toString());
 
 	return true;
 }
@@ -55,7 +55,7 @@ bool WifiAdapter_t::connect()
 void WifiAdapter_t::disconnect()
 {
 	WiFi.disconnect(true);
-	
+
 	int count = 0;
 	Logger.trace("disconnecting");
 	while (WiFi.status() != WL_DISCONNECTED)
@@ -113,4 +113,8 @@ String WifiAdapter_t::listWifiAsJson()
 	return response;
 }
 
+bool WifiAdapter_t::isAccessPoint()
+{
+	return _accessPoint;
+}
 WifiAdapter_t WifiAdapter;

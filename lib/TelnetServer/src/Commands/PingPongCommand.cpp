@@ -17,6 +17,10 @@ class PingPongCommand : public Command
         }
         return false;
     }
+
+    void help(WiFiClient *socket) override{
+        socket->write("PING: response a PONG\r\n");
+    }
 };
 
 

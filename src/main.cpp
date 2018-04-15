@@ -12,10 +12,11 @@ extern "C" {
 #include "Logger.h"
 #include "Appenders/SerialAppender.cpp"
 #include "TraceMemory.cpp"
-#include "Settings.h"
 #include "NTPClient.h"
 #include "WifiAdapter.h"
 #include "TelnetServer.h"
+#include "Settings.h"
+#include "WifiSetterCommand.cpp"
 #include "Relay.cpp"
 #include "Button.cpp"
 
@@ -29,6 +30,11 @@ extern "C" {
 #define RELAY2 2
 #define BUTTON1 0
 #define BUTTON2 3
+#elif ESP8266_D1_MINI
+#define RELAY1 D5
+#define RELAY2 D6
+#define BUTTON1 D3
+#define BUTTON2 D4
 #endif
 
 #ifdef DHT_ENABLED
@@ -159,9 +165,9 @@ void callback(char *topic, byte *payload, unsigned int length)
 bool reconnect()
 {
     String connectionString = Settings.readMqttConnectionString();
+    Logger.debug("MQTT.ConnectionString: " + String(connectionString));
     if (connectionString.length() > 0 && connectionString.startsWith("mqtt://"))
     {
-        Logger.debug("MQTT.ConnectionString: " + String(connectionString));
 
         // int indexOfArroba = connectionString.indexOf('@');
         // if (indexOfArroba != -1)
@@ -279,11 +285,16 @@ void setup()
     }
     else
     {
-        WifiAdapter.startAsAccessPoint("IoT-Device-1234");
+        randomSeed(analogRead(A0));
+        int r = random(1000, 9999);
+        String ssidAP = String("ESP8266-") + String(r);
+        WifiAdapter.startAsAccessPoint(ssidAP.c_str());
     }
 
     telnetServer = new TelnetServer(23);
     //TODO: Add commands to configure wifi
+    telnetServer->add(new WifiSetterCommand());
+    telnetServer->start();
 
     Logger.trace("ready");
 
@@ -292,18 +303,21 @@ void setup()
 
 void loopMQTT()
 {
-    if (!mqtt->connected())
+    if (mqtt != NULL)
     {
-        if (!reconnect())
+        if (!mqtt->connected())
         {
-            WifiAdapter.disconnect();
-            if (WifiAdapter.connect())
+            if (!reconnect())
             {
-                initMQTT();
+                WifiAdapter.disconnect();
+                if (WifiAdapter.connect())
+                {
+                    initMQTT();
+                }
             }
         }
+        mqtt->loop();
     }
-    mqtt->loop();
 }
 
 long lastProcess = 0;
@@ -379,20 +393,23 @@ void loop(void)
 {
     traceFreeMemory();
 
-    loopMQTT();
-
     processTelnet();
 
-    traceMemoryLeak(&processButtons);
+    if (!WifiAdapter.isAccessPoint())
+    {
+        loopMQTT();
+
+        traceMemoryLeak(&processButtons);
 
 #ifdef DHT_ENABLED
-    processDht();
+        processDht();
 #endif
 
-    if (lastProcess + 5000 < millis())
-    {
-        traceMemoryLeak(&processRelays);
-        lastProcess = millis();
+        if (lastProcess + 5000 < millis())
+        {
+            traceMemoryLeak(&processRelays);
+            lastProcess = millis();
+        }
     }
 
     delay(100);

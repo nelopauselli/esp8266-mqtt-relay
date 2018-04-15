@@ -72,18 +72,20 @@ char *SettingsClass::readMqttTopicBase()
 	return read(MQTT_TOPIC_BASE_START, MQTT_TOPIC_BASE_END);
 }
 
-char *SettingsClass::readOtaIp(){
+char *SettingsClass::readOtaIp()
+{
 	return "192.168.1.10";
 }
 
-int SettingsClass::readOtaPort(){
+int SettingsClass::readOtaPort()
+{
 	return 80;
 }
 
-char *SettingsClass::readOtaPath(){
+char *SettingsClass::readOtaPath()
+{
 	return "/esp/update";
 }
-
 
 void SettingsClass::write(int from, int to, String value)
 {
@@ -108,16 +110,18 @@ void SettingsClass::write(int from, int to, String value)
 
 char *SettingsClass::read(int from, int to)
 {
-	Logger.debug("Reading from " + String(from) + ".");
-	char *buffer = new char[to-from];
+	Logger.debug("Reading from " + String(from) + " to " + String(to) + ".");
+	char *buffer = new char[to - from];
 	for (int i = from; i < to; ++i)
 	{
 		char c = char(EEPROM.read(i));
-		buffer[i-from] = c;
+		Serial.print(c);
+		buffer[i - from] = c;
 
 		if (c == '\0')
 			break;
 	}
+	Serial.println();
 
 	Logger.debug("Value readed: " + String(buffer));
 	return buffer;

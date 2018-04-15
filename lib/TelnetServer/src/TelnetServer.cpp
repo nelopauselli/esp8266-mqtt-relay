@@ -1,63 +1,106 @@
 #include <TelnetServer.h>
-#include <Logger.h>
 
-#include "Commands/DebugCommand.cpp"
 #include "Commands/PingPongCommand.cpp"
 #include "Commands/NotFoundCommand.cpp"
+#include "Commands/HelpCommand.cpp"
 
 TelnetServer::TelnetServer(int port)
 {
-    server = new WiFiServer(port);
-    server->begin();
-    server->setNoDelay(true);
-
+    _port = port;
+    // add a PingPong command handler
     add(new PingPongCommand());
-    add(new DebugCommand());
-    invalidCommand = new NotFoundCommand();
-
-    Logger.trace("Ready! Use 'telnet ");
 }
 
 void TelnetServer::add(Command *command)
 {
-    commands[commandIndex++] = command;
+    // Add the new command at end of list
+    if (commands == NULL)
+        commands = new CommandListItem(command);
+    else
+    {
+        CommandListItem *item = commands;
+        while (item->next != NULL)
+        {
+            item = item->next;
+        }
+        item->next = new CommandListItem(command);
+    }
+}
+
+void TelnetServer::start()
+{
+    // complete the commands list with help and NotFound
+    add(new HelpCommand(commands));
+    add(new NotFoundCommand());
+
+    server = new WiFiServer(_port);
+    server->begin();
+    server->setNoDelay(true);
+
+    _stated = true;
+    
+    Serial.println("Telnet is ready!");
 }
 
 void TelnetServer::process()
 {
-    //check if there are any new clients
+    if (!_stated)
+    {
+        Serial.println("Telnet should be started before process!");
+        return;
+    }
+
+    // check if there are any new clients
     if (server->hasClient())
     {
-        //find free/disconnected spot
+        // only one client !
         if (!socket || !socket.connected())
         {
             if (socket)
                 socket.stop();
             socket = server->available();
-            socket.write("Welcome to ESP!\r\n");
-            Logger.trace("New client!");
-            
+
+            socket.write("\r\n");
+            socket.write(" ####### ####### #       #     # ####### #######                     \r\n");
+            socket.write("    #    #       #       ##    # #          #           ####  #    # \r\n");
+            socket.write("    #    #       #       # #   # #          #          #    # ##   # \r\n");
+            socket.write("    #    #####   #       #  #  # #####      #          #    # # #  # \r\n");
+            socket.write("    #    #       #       #   # # #          #          #    # #  # # \r\n");
+            socket.write("    #    #       #       #    ## #          #          #    # #   ## \r\n");
+            socket.write("    #    ####### ####### #     # #######    #           ####  #    # \r\n");
+            socket.write("\r\n");
+            socket.write("    #######  #####  ######   #####   #####   #####   #####  \r\n");
+            socket.write("    #       #     # #     # #     # #     # #     # #     # \r\n");
+            socket.write("    #       #       #     # #     #       # #       #       \r\n");
+            socket.write("    #####    #####  ######   #####   #####  ######  ######  \r\n");
+            socket.write("    #             # #       #     # #       #     # #     # \r\n");
+            socket.write("    #       #     # #       #     # #       #     # #     # \r\n");
+            socket.write("    #######  #####  #        #####  #######  #####   #####  \r\n");
+            socket.write("\r\n");
+            socket.write("Type HELP to list commands.\r\n");
+            socket.write("$ ");
+
             // Clean input stream
-            while(socket.available()){
+            while (socket.available())
+            {
                 socket.read();
             }
         }
         else
         {
-            //no free/disconnected spot so reject
+            // other client is working already, then incoming client is rejected
             WiFiClient other = server->available();
             other.write("Connection rejected");
             other.stop();
-            Logger.trace("Connection rejected");
         }
     }
 
-    //check clients for data
+    // check client for data
     if (socket && socket.connected())
     {
         if (socket.available())
         {
-            //get data from the telnet client and push it to the UART
+            //get data from the client until '\n' (and skip '\r')
             int bufferIndex = 0;
             char buffer[50];
 
@@ -66,41 +109,44 @@ void TelnetServer::process()
                 char c = socket.read();
                 if (c == '\r')
                 {
-                    // no hacemos nada con este caracter
+                    // nothing to do
                 }
                 else if (c == '\n')
                 {
-                    // Fin de línea para la instrucción
+                    // end of command
                     break;
                 }
                 else
                 {
-                    // vamos acumulando los caracteres de la instrucción
+                    // adding chars to build command
                     buffer[bufferIndex++] = c;
                 }
             }
 
+            // ending command with a '\0'
             buffer[bufferIndex] = '\0';
-            Logger.debug(buffer);
+            Serial.println(buffer);
 
-            if (strlen(buffer) > 0)
+            if (strlen(buffer) > 0) // skip blank command
             {
-                bool found = false;
-                for (int index = 0; index < commandIndex; index++)
+                CommandListItem *item = commands;
+                while (item != NULL)
                 {
-                    Command *command = commands[index];
+                    // iterating commands list waiting a handler be able to handle the command
+                    Command *command = item->command;
                     if (command != NULL)
                     {
                         if (command->process(buffer, &socket))
                         {
-                            found = true;
+                            // stop iteration when a command can handle the command
                             break;
                         }
                     }
+                    item = item->next;
                 }
 
-                if (!found)
-                    invalidCommand->process(buffer, &socket);
+                // tell to user that server is ready to another command
+                socket.write("$ ");
             }
         }
     }

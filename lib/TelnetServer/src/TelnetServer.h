@@ -4,21 +4,27 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
-#include <Command.h>
+#include "Command.h"
+#include "CommandListItem.h"
 
+/**
+ * Telnet Server 
+ */
 class TelnetServer
 {
 public:
-  TelnetServer(int port);
-  void add(Command *command);
-  void process();
+	TelnetServer(int port);
+
+	void add(Command *command);
+	void start();
+	void process();
 
 private:
-  WiFiServer *server = NULL;
-  Command *commands[10];
-  int commandIndex = 0;
-  WiFiClient socket;
-  Command *invalidCommand = NULL;
+	WiFiServer *server = NULL;
+	CommandListItem *commands = NULL;
+	WiFiClient socket;
+	int _port;
+	bool _stated = false;
 };
 
 #endif
