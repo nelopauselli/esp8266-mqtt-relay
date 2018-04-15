@@ -16,8 +16,8 @@ extern "C" {
 #include "WifiAdapter.h"
 #include "TelnetServer.h"
 #include "Settings.h"
-#include "WifiSetterCommand.cpp"
-#include "SetMqttCommand.cpp"
+#include "Commands/SetWifiCommand.cpp"
+#include "Commands/SetMqttCommand.cpp"
 #include "Relay.cpp"
 #include "Button.cpp"
 
@@ -293,7 +293,7 @@ void setup()
 
     telnetServer = new TelnetServer(23);
     //TODO: Add commands to configure wifi
-    telnetServer->add(new WifiSetterCommand());
+    telnetServer->add(new SetWifiCommand());
     telnetServer->add(new SetMqttCommand());
     telnetServer->start();
 

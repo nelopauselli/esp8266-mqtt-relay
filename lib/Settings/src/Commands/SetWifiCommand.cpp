@@ -1,11 +1,11 @@
-#ifndef WIFI_SETTER_COMMAND_CLASS
-#define WIFI_SETTER_COMMAND_CLASS
+#ifndef SET_WIFI_COMMAND_CLASS
+#define SET_WIFI_COMMAND_CLASS
 
 #include <Command.h>
 #include <Logger.h>
 #include <Settings.h>
 
-class WifiSetterCommand : public Command
+class SetWifiCommand : public Command
 {
   public:
     bool process(char *line, WiFiClient *socket) override
