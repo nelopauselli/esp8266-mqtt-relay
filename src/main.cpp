@@ -17,6 +17,7 @@ extern "C" {
 #include "TelnetServer.h"
 #include "Settings.h"
 #include "WifiSetterCommand.cpp"
+#include "SetMqttCommand.cpp"
 #include "Relay.cpp"
 #include "Button.cpp"
 
@@ -165,10 +166,9 @@ void callback(char *topic, byte *payload, unsigned int length)
 bool reconnect()
 {
     String connectionString = Settings.readMqttConnectionString();
-    Logger.debug("MQTT.ConnectionString: " + String(connectionString));
     if (connectionString.length() > 0 && connectionString.startsWith("mqtt://"))
     {
-
+        Logger.debug("MQTT.ConnectionString: " + String(connectionString));
         // int indexOfArroba = connectionString.indexOf('@');
         // if (indexOfArroba != -1)
         // {
@@ -294,6 +294,7 @@ void setup()
     telnetServer = new TelnetServer(23);
     //TODO: Add commands to configure wifi
     telnetServer->add(new WifiSetterCommand());
+    telnetServer->add(new SetMqttCommand());
     telnetServer->start();
 
     Logger.trace("ready");
