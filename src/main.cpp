@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-#define DHT_ENABLED
 #define OTA_ENABLED
 
 extern "C" {
@@ -45,7 +44,7 @@ extern "C" {
 #define LIGHT_PIN D7
 #endif
 
-#ifdef DHT_ENABLED
+#ifdef DHT_PIN
 #include <DHT.h>
 DHT dht;
 #endif
@@ -94,7 +93,7 @@ void initHardware()
     button2 = new Button(BUTTON2, "boton-rojo");
     button2->attach(relay2);
 
-#ifdef DHT_ENABLED
+#ifdef DHT_PIN
     dht.setup(DHT_PIN);
 #endif
 
@@ -175,10 +174,12 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         relay2->invoke(message);
     }
+#ifdef LIGHT_PIN
     else if (strcmp(topic + strlen(topic) - strlen("/light"), "/light") == 0)
     {
         light->invoke(message);
     }
+#endif
     else if (strcmp(topic + strlen(topic) - strlen("/restart"), "/restart") == 0)
     {
         const char *chipId = String(ESP.getChipId()).c_str();
@@ -261,7 +262,9 @@ bool initMQTT()
             button1->attach(mqtt);
             relay2->attach(mqtt);
             button2->attach(mqtt);
+#ifdef LIGHT_PIN
             light->attach(mqtt);
+#endif
 
             return reconnect();
         }
@@ -382,7 +385,7 @@ void processTelnet()
         telnetServer->process();
 }
 
-#ifdef DHT_ENABLED
+#ifdef DHT_PIN
 #define DHT_MAX 5
 float humidity;
 float temperature;
@@ -445,7 +448,7 @@ void loop(void)
 
         traceMemoryLeak(&processButtons);
 
-#ifdef DHT_ENABLED
+#ifdef DHT_PIN
         processDht();
 #endif
 
@@ -459,11 +462,14 @@ void loop(void)
         }
     }
 
+#ifdef LED_ACTIVITY
     if (lastBlink + 1000 < millis())
     {
         statusBlink = !statusBlink;
         digitalWrite(LED_ACTIVITY, statusBlink);
         lastBlink = millis();
     }
+#endif
+
     delay(100);
 }
