@@ -324,7 +324,6 @@ void setup()
     }
 
     telnetServer = new TelnetServer(23);
-    //TODO: Add commands to configure wifi
     telnetServer->add(new SetWifiCommand());
     telnetServer->add(new SetMqttCommand());
     telnetServer->start();
