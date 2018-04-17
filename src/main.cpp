@@ -179,7 +179,18 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         light->invoke(message);
     }
-
+    else if (strcmp(topic + strlen(topic) - strlen("/restart"), "/restart") == 0)
+    {
+        const char *chipId = String(ESP.getChipId()).c_str();
+        if (strcmp(message, chipId) == 0)
+        {
+            ESP.restart();
+        }
+        else
+        {
+            mqtt->publish("error", "invalid chip ID");
+        }
+    }
     delete message;
 }
 
