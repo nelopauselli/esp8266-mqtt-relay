@@ -26,6 +26,8 @@ extern "C" {
 #define RELAY2 D6
 #define BUTTON1 D3
 #define BUTTON2 D4
+#define LED_ACTIVITY LED_BUILTIN
+#define DHT_PIN D1
 #elif ARDUINO_ESP8266_ESP01
 #define RELAY1 1
 #define RELAY2 2
@@ -35,7 +37,9 @@ extern "C" {
 #define RELAY1 D5
 #define RELAY2 D6
 #define BUTTON1 D3
-#define BUTTON2 D4
+#define BUTTON2 D2
+#define LED_ACTIVITY D4
+#define DHT_PIN D1
 #endif
 
 #ifdef DHT_ENABLED
@@ -67,8 +71,10 @@ void initLogger()
 
 void initHardware()
 {
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
+#ifdef LED_ACTIVITY
+    pinMode(LED_ACTIVITY, OUTPUT);
+    digitalWrite(LED_ACTIVITY, HIGH);
+#endif
 
     Logger.trace("Init relays...");
 
@@ -83,7 +89,7 @@ void initHardware()
     button2->attach(relay2);
 
 #ifdef DHT_ENABLED
-    dht.setup(D1);
+    dht.setup(DHT_PIN);
 #endif
 }
 
@@ -299,7 +305,9 @@ void setup()
 
     Logger.trace("ready");
 
-    digitalWrite(LED_BUILTIN, LOW);
+#ifdef LED_ACTIVITY
+    digitalWrite(LED_ACTIVITY, LOW);
+#endif
 }
 
 void loopMQTT()
@@ -390,6 +398,9 @@ void processDht()
 }
 #endif
 
+long lastBlink;
+bool statusBlink = true;
+
 void loop(void)
 {
     traceFreeMemory();
@@ -413,5 +424,11 @@ void loop(void)
         }
     }
 
+    if (lastBlink + 1000 < millis())
+    {
+        statusBlink = !statusBlink;
+        digitalWrite(LED_ACTIVITY, statusBlink);
+        lastBlink = millis();
+    }
     delay(100);
 }
