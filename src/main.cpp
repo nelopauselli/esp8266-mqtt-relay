@@ -18,10 +18,9 @@ extern "C" {
 #include "Settings.h"
 #include "Commands/SetWifiCommand.cpp"
 #include "Commands/SetMqttCommand.cpp"
-#include "Commands/LightOnCommand.cpp"
-#include "Commands/LightOffCommand.cpp"
 #include "Relay.cpp"
 #include "Button.cpp"
+#include "Light.cpp"
 
 #ifdef ARDUINO_ESP8266_NODEMCU
 #define RELAY1 D5 //LED_BUILTIN
@@ -60,6 +59,9 @@ Relay *relay1;
 Relay *relay2;
 Button *button1;
 Button *button2;
+#ifdef LIGHT_PIN
+Light *light;
+#endif
 
 TelnetServer *telnetServer = NULL;
 MqttAdapter *mqtt = NULL;
@@ -80,11 +82,6 @@ void initHardware()
     digitalWrite(LED_ACTIVITY, HIGH);
 #endif
 
-#ifdef LIGHT_PIN
-    pinMode(LIGHT_PIN, OUTPUT);
-    digitalWrite(LIGHT_PIN, HIGH);
-#endif
-
     Logger.trace("Init relays...");
 
     relay1 = new Relay(RELAY1, "extractor", TimeSpan{1, 0, 0});
@@ -99,6 +96,10 @@ void initHardware()
 
 #ifdef DHT_ENABLED
     dht.setup(DHT_PIN);
+#endif
+
+#ifdef LIGHT_PIN
+    light = new Light(LIGHT_PIN, "luz");
 #endif
 }
 
@@ -174,6 +175,10 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         relay2->invoke(message);
     }
+    else if (strcmp(topic + strlen(topic) - strlen("/light"), "/light") == 0)
+    {
+        light->invoke(message);
+    }
 
     delete message;
 }
@@ -245,6 +250,7 @@ bool initMQTT()
             button1->attach(mqtt);
             relay2->attach(mqtt);
             button2->attach(mqtt);
+            light->attach(mqtt);
 
             return reconnect();
         }
@@ -310,8 +316,6 @@ void setup()
     //TODO: Add commands to configure wifi
     telnetServer->add(new SetWifiCommand());
     telnetServer->add(new SetMqttCommand());
-    telnetServer->add(new LightOnCommand(LIGHT_PIN));
-    telnetServer->add(new LightOffCommand(LIGHT_PIN));
     telnetServer->start();
 
     Logger.trace("ready");
@@ -354,6 +358,13 @@ void processRelays()
 
     Logger.debug("Check completed.");
 }
+
+#ifdef LIGHT_PIN
+void processLights()
+{
+    light->process();
+}
+#endif
 
 void processTelnet()
 {
@@ -431,7 +442,10 @@ void loop(void)
         if (lastProcess + 5000 < millis())
         {
             traceMemoryLeak(&processRelays);
+#ifdef LIGHT_PIN
+            traceMemoryLeak(&processLights);
             lastProcess = millis();
+#endif
         }
     }
 
