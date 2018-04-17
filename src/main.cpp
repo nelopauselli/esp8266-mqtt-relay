@@ -18,6 +18,8 @@ extern "C" {
 #include "Settings.h"
 #include "Commands/SetWifiCommand.cpp"
 #include "Commands/SetMqttCommand.cpp"
+#include "Commands/LightOnCommand.cpp"
+#include "Commands/LightOffCommand.cpp"
 #include "Relay.cpp"
 #include "Button.cpp"
 
@@ -25,9 +27,10 @@ extern "C" {
 #define RELAY1 D5 //LED_BUILTIN
 #define RELAY2 D6
 #define BUTTON1 D3
-#define BUTTON2 D4
-#define LED_ACTIVITY LED_BUILTIN
+#define BUTTON2 D2
+#define LED_ACTIVITY D4
 #define DHT_PIN D1
+#define LIGHT_PIN LED_BUILTIN
 #elif ARDUINO_ESP8266_ESP01
 #define RELAY1 1
 #define RELAY2 2
@@ -40,6 +43,7 @@ extern "C" {
 #define BUTTON2 D2
 #define LED_ACTIVITY D4
 #define DHT_PIN D1
+#define LIGHT_PIN D7
 #endif
 
 #ifdef DHT_ENABLED
@@ -74,6 +78,11 @@ void initHardware()
 #ifdef LED_ACTIVITY
     pinMode(LED_ACTIVITY, OUTPUT);
     digitalWrite(LED_ACTIVITY, HIGH);
+#endif
+
+#ifdef LIGHT_PIN
+    pinMode(LIGHT_PIN, OUTPUT);
+    digitalWrite(LIGHT_PIN, HIGH);
 #endif
 
     Logger.trace("Init relays...");
@@ -301,6 +310,8 @@ void setup()
     //TODO: Add commands to configure wifi
     telnetServer->add(new SetWifiCommand());
     telnetServer->add(new SetMqttCommand());
+    telnetServer->add(new LightOnCommand(LIGHT_PIN));
+    telnetServer->add(new LightOffCommand(LIGHT_PIN));
     telnetServer->start();
 
     Logger.trace("ready");
