@@ -5,22 +5,19 @@
 
 class SettingsClass
 {
-public:
+  public:
 	SettingsClass();
-	void writeSSID(int index, String value);
-	char *readSSID(int index);
-	void writePassword(int index, String value);
-	char *readPassword(int index);
+	void writeWifi(int index, String value);
+	char *readWifi(int index);
 	void writeMqttConnectionString(String value);
 	char *readMqttConnectionString();
 	void writeMqttTopicBase(String value);
 	char *readMqttTopicBase();
+	
+	void writeOtaUrl(String value);
+	char *readOtaUrl();
 
-	char *readOtaIp();
-	int readOtaPort();
-	char *readOtaPath();
-
-private:
+  private:
 	void write(int from, int to, String value);
 	char *read(int from, int to);
 };

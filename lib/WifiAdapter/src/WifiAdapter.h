@@ -11,7 +11,7 @@ class WifiAdapter_t
 {
 public:
 	IPAddress getIP();
-	void addAP(const char *ssid, const char *password);
+	void addAP(char *connectionString);
 	bool connect();
 	void disconnect();
 	void startAsAccessPoint(const char *ssid);

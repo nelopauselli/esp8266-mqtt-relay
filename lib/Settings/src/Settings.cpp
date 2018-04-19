@@ -2,54 +2,36 @@
 #include <EEPROM.h>
 #include "Logger.h"
 
-#define WIFI_SSID_START_1 0
-#define WIFI_SSID_END_1 31
-#define WIFI_PASSWORD_START_1 32
-#define WIFI_PASSWORD_END_1 96
-#define WIFI_SSID_START_2 97
-#define WIFI_SSID_END_2 128
-#define WIFI_PASSWORD_START_2 129
-#define WIFI_PASSWORD_END_2 193
-#define MQTT_CONNECTION_STRING_START 194
-#define MQTT_CONNECTION_STRING_END 254
-#define MQTT_TOPIC_BASE_START 255
-#define MQTT_TOPIC_BASE_END 275
+#define WIFI_START_1 0
+#define WIFI_END_1 49
+#define WIFI_START_2 50
+#define WIFI_END_2 99
+#define MQTT_CONNECTION_STRING_START 100
+#define MQTT_CONNECTION_STRING_END 149
+#define MQTT_TOPIC_BASE_START 150
+#define MQTT_TOPIC_BASE_END 199
+#define OTA_URL_START 200
+#define OTA_URL_END 249
 
 SettingsClass::SettingsClass()
 {
 	EEPROM.begin(512);
 }
 
-void SettingsClass::writeSSID(int index, String value)
+void SettingsClass::writeWifi(int index, String value)
 {
 	if (index == 1)
-		write(WIFI_SSID_START_1, WIFI_SSID_END_1, value);
+		write(WIFI_START_1, WIFI_END_1, value);
 	else
-		write(WIFI_SSID_START_2, WIFI_SSID_END_2, value);
+		write(WIFI_START_2, WIFI_END_2, value);
 }
 
-char *SettingsClass::readSSID(int index)
+char *SettingsClass::readWifi(int index)
 {
 	if (index == 1)
-		return read(WIFI_SSID_START_1, WIFI_SSID_END_1);
+		return read(WIFI_START_1, WIFI_END_1);
 	else
-		return read(WIFI_SSID_START_2, WIFI_SSID_END_2);
-}
-
-void SettingsClass::writePassword(int index, String value)
-{
-	if (index == 1)
-		write(WIFI_PASSWORD_START_1, WIFI_PASSWORD_END_1, value);
-	else
-		write(WIFI_PASSWORD_START_2, WIFI_PASSWORD_END_2, value);
-}
-
-char *SettingsClass::readPassword(int index)
-{
-	if (index == 1)
-		return read(WIFI_PASSWORD_START_1, WIFI_PASSWORD_END_1);
-	else
-		return read(WIFI_PASSWORD_START_2, WIFI_PASSWORD_END_2);
+		return read(WIFI_START_2, WIFI_END_2);
 }
 
 void SettingsClass::writeMqttConnectionString(String value)
@@ -72,19 +54,14 @@ char *SettingsClass::readMqttTopicBase()
 	return read(MQTT_TOPIC_BASE_START, MQTT_TOPIC_BASE_END);
 }
 
-char *SettingsClass::readOtaIp()
+void SettingsClass::writeOtaUrl(String value)
 {
-	return "192.168.1.10";
+	write(OTA_URL_START, OTA_URL_END, value);
 }
 
-int SettingsClass::readOtaPort()
+char *SettingsClass::readOtaUrl()
 {
-	return 80;
-}
-
-char *SettingsClass::readOtaPath()
-{
-	return "/esp/update";
+	return read(OTA_URL_START, OTA_URL_END);
 }
 
 void SettingsClass::write(int from, int to, String value)

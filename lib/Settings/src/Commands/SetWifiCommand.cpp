@@ -4,6 +4,7 @@
 #include <Command.h>
 #include <Logger.h>
 #include <Settings.h>
+#include "Splitter.h"
 
 class SetWifiCommand : public Command
 {
@@ -16,26 +17,20 @@ class SetWifiCommand : public Command
             Logger.trace("Configurando WiFi");
 
             char *value = new char[strlen(line) - strlen(key) + 1];
-            strcpy(value, line + strlen(key));
-            Logger.debug(value);
+            Splitter splitter = Splitter(line + strlen(key));
 
             char *index = strtok(value, " ");
             Logger.debug(index);
-            char *ssid = strtok(NULL, "@");
-            Logger.debug(ssid);
-            char *password = strtok(NULL, "@");
-            Logger.debug(password);
+            char *connectionString = strtok(NULL, "\0");
 
             if (strcmp(index, "1") == 0)
             {
-                Settings.writeSSID(1, ssid);
-                Settings.writePassword(1, password);
+                Settings.writeWifi(1, connectionString);
                 socket->write("OK\r\n");
             }
             else if (strcmp(index, "2") == 0)
             {
-                Settings.writeSSID(2, ssid);
-                Settings.writePassword(2, password);
+                Settings.writeWifi(2, connectionString);
                 socket->write("OK\r\n");
             }
             else

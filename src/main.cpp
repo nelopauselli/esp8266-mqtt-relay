@@ -12,6 +12,7 @@ extern "C" {
 #include "Appenders/SerialAppender.cpp"
 #include "TraceMemory.cpp"
 #include "NTPClient.h"
+#include "Splitter.h"
 #include "WifiAdapter.h"
 #include "TelnetServer.h"
 #include "Settings.h"
@@ -275,10 +276,12 @@ bool initMQTT()
 #ifdef OTA_ENABLED
 void checkForUpdates()
 {
-    Logger.trace(String("Searching firmware updates in http://") + Settings.readOtaIp() + ":" + Settings.readOtaPort() + Settings.readOtaPath());
+    char *url = Settings.readOtaUrl();
+
+    Logger.trace(String("Searching firmware updates in ") + url);
     Logger.debug(String("MD5 Checksum: ") + ESP.getSketchMD5());
 
-    t_httpUpdate_return ret = ESPhttpUpdate.update(Settings.readOtaIp(), Settings.readOtaPort(), Settings.readOtaPath());
+    t_httpUpdate_return ret = ESPhttpUpdate.update(url);
     switch (ret)
     {
     case HTTP_UPDATE_FAILED:
@@ -306,8 +309,8 @@ void setup()
     Logger.debug("Getting ChipID");
     Logger.trace("ChipID: " + String(ESP.getChipId()));
 
-    WifiAdapter.addAP(Settings.readSSID(1), Settings.readPassword(1));
-    WifiAdapter.addAP(Settings.readSSID(2), Settings.readPassword(2));
+    WifiAdapter.addAP(Settings.readWifi(1));
+    WifiAdapter.addAP(Settings.readWifi(2));
 
     if (WifiAdapter.connect())
     {

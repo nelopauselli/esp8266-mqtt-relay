@@ -2,6 +2,8 @@
 #include <ESP8266WiFi.h>
 #include <WifiAdapter.h>
 
+#include <Splitter.h>
+
 IPAddress WifiAdapter_t::getIP()
 {
 	if (_accessPoint)
@@ -10,10 +12,17 @@ IPAddress WifiAdapter_t::getIP()
 		return WiFi.localIP();
 }
 
-void WifiAdapter_t::addAP(const char *ssid, const char *password)
+void WifiAdapter_t::addAP(char *connectionString)
 {
-	if (strlen(ssid) > 0)
+	if (strlen(connectionString) > 0)
+	{
+		Splitter splitter = Splitter(connectionString);
+
+		char *ssid = splitter.getNextChunk('@');
+		char *password = splitter.getNextChunk('\0');
+		
 		_wifiMulti.addAP(ssid, password);
+	}
 }
 
 bool WifiAdapter_t::connect()
