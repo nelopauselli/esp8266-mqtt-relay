@@ -19,7 +19,7 @@ class SetWifiCommand : public Command
             char *value = new char[strlen(line) - strlen(key) + 1];
             Splitter splitter = Splitter(line + strlen(key));
 
-            char *index = strtok(value, " ");
+            char *index = splitter.getNextChunk(' ');
             Logger.debug(index);
             char *connectionString = strtok(NULL, "\0");
 
