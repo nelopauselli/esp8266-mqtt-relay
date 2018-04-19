@@ -21,7 +21,7 @@ class SetWifiCommand : public Command
 
             char *index = splitter.getNextChunk(' ');
             Logger.debug(index);
-            char *connectionString = strtok(NULL, "\0");
+            char *connectionString = splitter.getNextChunk('\0');
 
             if (strcmp(index, "1") == 0)
             {
