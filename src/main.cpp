@@ -7,6 +7,7 @@ extern "C" {
 }
 
 #include "MqttAdapter.h"
+#include "MqttEventArgs.h"
 
 #include "Logger.h"
 #include "Appenders/SerialAppender.cpp"
@@ -19,6 +20,7 @@ extern "C" {
 #include "Commands/SetWifiCommand.cpp"
 #include "Commands/SetMqttCommand.cpp"
 #include "Relay.cpp"
+#include "RelayObserver.cpp"
 #include "Button.cpp"
 #include "Light.cpp"
 
@@ -161,20 +163,16 @@ void callback(char *topic, byte *payload, unsigned int length)
     message[length] = '\0';
     Serial.println(message);
 
+    char *subtopic = new char[strlen(topic) - strlen(mqtt->name())+1];
+    strcpy(subtopic, &topic[strlen(mqtt->name())]);
+    MqttEventArgs *args = new MqttEventArgs(subtopic, message);
+    mqtt->notify(args);
+
     if (strcmp(topic, "/devices/search") == 0)
     {
         device_search();
     }
 
-    int topicLen = strlen(topic);
-    if (strcmp(topic + strlen(topic) - strlen("/relay1"), "/relay1") == 0)
-    {
-        relay1->invoke(message);
-    }
-    else if (strcmp(topic + strlen(topic) - strlen("/relay2"), "/relay2") == 0)
-    {
-        relay2->invoke(message);
-    }
 #ifdef LIGHT_PIN
     else if (strcmp(topic + strlen(topic) - strlen("/light"), "/light") == 0)
     {
@@ -242,11 +240,13 @@ bool initMQTT()
     {
         Logger.debug(String("Connecting to broker in ") + mqttServer + ":" + String(mqttPort));
         char *topic = Settings.readMqttTopicBase();
-        mqtt = new MqttAdapter(topic, mqttServer, mqttPort);
+        mqtt = new MqttAdapter(mqttServer, mqttPort, topic);
 
         relay1->attach(mqtt);
+        mqtt->attach(new RelayObserver(relay1));
         button1->attach(mqtt);
         relay2->attach(mqtt);
+        mqtt->attach(new RelayObserver(relay2));
         button2->attach(mqtt);
 #ifdef LIGHT_PIN
         light->attach(mqtt);

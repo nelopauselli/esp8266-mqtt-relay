@@ -7,7 +7,7 @@
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-MqttAdapter::MqttAdapter(const char *name, const char *server, int port)
+MqttAdapter::MqttAdapter(const char *server, int port, const char *name)
 {
   _name = new char[strlen(name) + 1];
   strcpy(_name, name);
@@ -121,4 +121,9 @@ void MqttAdapter::publish(const char *subtopic, const char *message)
   strcat(target, subtopic);
 
   client.publish(target, message);
+}
+
+char *MqttAdapter::name()
+{
+  return _name;
 }
