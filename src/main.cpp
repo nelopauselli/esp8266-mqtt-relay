@@ -198,77 +198,61 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 bool reconnect()
 {
-    String connectionString = Settings.readMqttConnectionString();
-    if (connectionString.length() > 0 && connectionString.startsWith("mqtt://"))
+    char *connectionString = Settings.readMqttConnectionString();
+
+    Splitter splitter = Splitter(connectionString);
+    char *chunk = splitter.getNextChunk('@');
+
+    Splitter splitter2 = Splitter(chunk);
+    char *mqttUserName = splitter2.getNextChunk(':');
+    char *mqttPassword = splitter2.getNextChunk('\0');
+    if (strlen(mqttUserName) > 0 && strlen(mqttPassword) > 0)
     {
-        Logger.debug("MQTT.ConnectionString: " + String(connectionString));
-        // int indexOfArroba = connectionString.indexOf('@');
-        // if (indexOfArroba != -1)
-        // {
-        //     String usernameAndPassword = connectionString.substring(7, indexOfArroba);
-        //     Logger.debug(usernameAndPassword);
+        Logger.debug("connecting to mqtt with user & pass");
+        if (mqtt->connect(mqttUserName, mqttPassword))
+        {
+            mqtt->setCallback(callback);
+            return true;
+        }
+    }
+    else
+    {
+        Logger.debug("connecting to mqtt anonymous");
 
-        //     int indexOfSeparator = usernameAndPassword.indexOf(':');
-        //     Logger.debug(String(indexOfSeparator));
-        //     String username = usernameAndPassword.substring(0, indexOfSeparator);
-        //     const char *mqttUserName = username.c_str();
-        //     Logger.debug(mqttUserName);
-
-        //     String password = usernameAndPassword.substring(indexOfSeparator + 1);
-        //     const char *mqttPassword = password.c_str();
-        //     Logger.debug(mqttPassword);
-
-        //     if (mqtt->connect(mqttUserName, mqttPassword))
-        //     {
-        //         mqtt->setCallback(callback);
-        //         return true;
-        //     }
-        // }
-        // else
-        // {
         if (mqtt->connect())
         {
             mqtt->setCallback(callback);
             return true;
         }
-        //     }
     }
     return false;
 }
 
 bool initMQTT()
 {
-    String connectionString = Settings.readMqttConnectionString();
-    if (connectionString.length() > 0 && connectionString.startsWith("mqtt://"))
+    char *connectionString = Settings.readMqttConnectionString();
+
+    Splitter splitter = Splitter(connectionString);
+
+    splitter.skipTo('@');
+    char *mqttServer = splitter.getNextChunk(':');
+    uint16_t mqttPort = atoi(splitter.getNextChunk('\0'));
+
+    if (strlen(mqttServer) > 0 && mqttPort)
     {
-        Logger.debug("MQTT.ConnectionString: " + String(connectionString));
+        Logger.debug(String("Connecting to broker in ") + mqttServer + ":" + String(mqttPort));
+        char *topic = Settings.readMqttTopicBase();
+        mqtt = new MqttAdapter(topic, mqttServer, mqttPort);
 
-        int indexOfArroba = connectionString.indexOf('@');
-        if (indexOfArroba != -1)
-        {
-            String serverAndPort = connectionString.substring(indexOfArroba + 1);
-            Logger.debug(serverAndPort);
-
-            int indexOfSeparator = serverAndPort.indexOf(':');
-            Logger.debug(String(indexOfSeparator));
-            String server = serverAndPort.substring(0, indexOfSeparator);
-            const char *mqttServer = server.c_str();
-            Logger.debug(mqttServer);
-            uint16_t mqttPort = serverAndPort.substring(indexOfSeparator + 1).toInt();
-            Logger.debug(String(mqttPort));
-
-            mqtt = new MqttAdapter("/cullen/baño2", mqttServer, mqttPort);
-
-            relay1->attach(mqtt);
-            button1->attach(mqtt);
-            relay2->attach(mqtt);
-            button2->attach(mqtt);
+        relay1->attach(mqtt);
+        button1->attach(mqtt);
+        relay2->attach(mqtt);
+        button2->attach(mqtt);
 #ifdef LIGHT_PIN
-            light->attach(mqtt);
+        light->attach(mqtt);
 #endif
 
-            return reconnect();
-        }
+        return reconnect();
     }
     return false;
 }

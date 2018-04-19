@@ -31,7 +31,7 @@ class SetMqttCommand : public Command
 
     void help(WiFiClient *socket) override
     {
-        socket->write("SET MQTT mqtt://username:password@server:port\r\n");
+        socket->write("SET MQTT username:password@server:port\r\n");
     }
 };
 
