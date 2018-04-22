@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #define OTA_ENABLED
+#define TEST_MODE
 
 extern "C" {
 #include "user_interface.h"
@@ -8,6 +9,10 @@ extern "C" {
 
 #include "MqttAdapter.h"
 #include "MqttEventArgs.h"
+
+#ifdef TEST_MODE
+#include "ArduinoUnitTest.h"
+#endif
 
 #include "Logger.h"
 #include "Appenders/SerialAppender.cpp"
@@ -67,6 +72,59 @@ Light *light;
 
 TelnetServer *telnetServer = NULL;
 MqttAdapter *mqtt = NULL;
+
+#ifdef TEST_MODE
+
+void test1()
+{
+    Time time(1524362301); //22 de April de 2018 1:58:21
+
+    char *buffer = time.toCharArray();
+    Assert.areEqual("01:58:21", buffer);
+}
+
+void test2()
+{
+    Time time(1524434780); //22 de April de 2018 22:06:20
+
+    char *buffer = time.toCharArray();
+    Assert.areEqual("22:06:20", buffer);
+}
+
+void test3()
+{
+    Time time(1524389400); //22 de April de 2018 9:30:00
+
+    char *buffer = time.toCharArray();
+    Assert.areEqual("09:30:00", buffer);
+}
+
+void test4()
+{
+    Time time(1524393000); //22 de April de 2018 10:30:00
+
+    char *buffer = time.toCharArray();
+    Assert.areEqual("10:30:00", buffer);
+}
+
+void tests()
+{
+    Serial.begin(115200);
+    Serial.println("Start unit tests");
+
+    test1();
+    test2();
+    test3();
+    test4();
+
+    Serial.println("End unit tests");
+
+    Assert.summary();
+
+    delay(1000);
+}
+
+#endif
 
 void initLogger()
 {
@@ -163,7 +221,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     message[length] = '\0';
     Serial.println(message);
 
-    char *subtopic = new char[strlen(topic) - strlen(mqtt->name())+1];
+    char *subtopic = new char[strlen(topic) - strlen(mqtt->name()) + 1];
     strcpy(subtopic, &topic[strlen(mqtt->name())]);
     MqttEventArgs *args = new MqttEventArgs(subtopic, message);
     mqtt->notify(args);
@@ -285,6 +343,10 @@ void checkForUpdates()
 
 void setup()
 {
+#ifdef TEST_MODE
+    tests();
+#endif
+
     traceFreeMemory();
 
     initLogger();
