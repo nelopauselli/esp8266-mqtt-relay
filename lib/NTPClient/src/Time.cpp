@@ -20,30 +20,30 @@ char *Time::toCharArray()
 void Time::toCharArray(char *buffer)
 {
 	int seconds = _time % 60;
-	int minutes = _time / 60 % 60;
-	int hours = _time / 3600 % 24;
+	int minutes = (_time / 60) % 60;
+	int hours = (_time / 3600) % 24;
 
 	if (hours < 10)
 		buffer[0] = '0';
 	else
-		buffer[0] = (hours / 10 % 10) + 48;
-	buffer[1] = (hours % 10) + 48;
+		buffer[0] = (hours / 10 % 10) + '0';
+	buffer[1] = (hours % 10) + '0';
 
 	buffer[2] = ':';
 
-	if (hours < 10)
+	if (minutes < 10)
 		buffer[3] = '0';
 	else
-		buffer[3] = (minutes / 10 % 10) + 48;
-	buffer[4] = (minutes % 10) + 48;
+		buffer[3] = (minutes / 10 % 10) + '0';
+	buffer[4] = (minutes % 10) + '0';
 
 	buffer[5] = ':';
 
-	if (hours < 10)
+	if (seconds < 10)
 		buffer[6] = '0';
 	else
-		buffer[6] = (seconds / 10 % 10) + 48;
-	buffer[7] = (seconds % 10) + 48;
+		buffer[6] = (seconds / 10 % 10) + '0';
+	buffer[7] = (seconds % 10) + '0';
 
 	buffer[8] = '\0';
 }
