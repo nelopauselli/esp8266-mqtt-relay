@@ -2,21 +2,27 @@
 #define BUTTON_CLASS
 
 #include <Arduino.h>
+#include "ButtonEventArgs.h"
 #include "Logger.h"
 #include "MqttAdapter.h"
 #include "Relay.cpp"
 
-class Button
+class Button : public Subject<ButtonEventArgs>
 {
   public:
 	Button(uint8_t pin, const char *name)
 	{
 		_pin = pin;
 		_name = name;
-		
+
 		pinMode(_pin, INPUT_PULLUP);
 
 		_lastPush = 0;
+	}
+
+	const char *name()
+	{
+		return _name;
 	}
 
 	void process()
@@ -29,22 +35,10 @@ class Button
 		{
 			_lastPush = millis();
 
-			if (_mqtt != NULL)
-				_mqtt->publish(_name, "pressed");
-
-			if (_relay != NULL)
-				_relay->toggle();
+			ButtonEventArgs args;
+			args.pressed = true;
+			Subject::notify(&args);
 		}
-	}
-
-	void attach(MqttAdapter *mqtt)
-	{
-		_mqtt = mqtt;
-	}
-
-	void attach(Relay *relay)
-	{
-		_relay = relay;
 	}
 
   private:
@@ -52,9 +46,6 @@ class Button
 	const char *_name;
 
 	long _lastPush;
-
-	Relay *_relay;
-	MqttAdapter *_mqtt;
 };
 
 #endif

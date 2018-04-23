@@ -1,14 +1,14 @@
-#ifndef RELAY_OBSERVER_CLASS
-#define RELAY_OBSERVER_CLASS
+#ifndef MQTT_RELAY_OBSERVER_CLASS
+#define MQTT_RELAY_OBSERVER_CLASS
 
 #include "Observer.h"
 #include "MqttEventArgs.h"
 #include "Relay.cpp"
 
-class RelayObserver : public Observer<MqttEventArgs>
+class MqttRelayObserver : public Observer<MqttEventArgs>
 {
   public:
-    RelayObserver(Relay *relay)
+    MqttRelayObserver(Relay *relay)
     {
         _relay = relay;
         _topic = new char[strlen(relay->name()) + 2];

@@ -25,7 +25,9 @@ extern "C" {
 #include "Commands/SetWifiCommand.cpp"
 #include "Commands/SetMqttCommand.cpp"
 #include "Relay.cpp"
-#include "RelayObserver.cpp"
+#include "Observers/MqttRelayObserver.cpp"
+#include "Observers/ButtonRelayObserver.cpp"
+#include "Observers/ButtonMqttObserver.cpp"
 #include "Button.cpp"
 #include "Light.cpp"
 
@@ -150,9 +152,9 @@ void initHardware()
     Logger.trace("Init buttons...");
 
     button1 = new Button(BUTTON1, "boton-azul");
-    button1->attach(relay1);
+    button1->attach(new ButtonRelayObserver(relay1));
     button2 = new Button(BUTTON2, "boton-rojo");
-    button2->attach(relay2);
+    button2->attach(new ButtonRelayObserver(relay2));
 
 #ifdef DHT_PIN
     dht.setup(DHT_PIN);
@@ -301,11 +303,11 @@ bool initMQTT()
         mqtt = new MqttAdapter(mqttServer, mqttPort, topic);
 
         relay1->attach(mqtt);
-        mqtt->attach(new RelayObserver(relay1));
-        button1->attach(mqtt);
+        mqtt->attach(new MqttRelayObserver(relay1));
+        button1->attach(new ButtonMqttObserver(button1, mqtt));
         relay2->attach(mqtt);
-        mqtt->attach(new RelayObserver(relay2));
-        button2->attach(mqtt);
+        mqtt->attach(new MqttRelayObserver(relay2));
+        button2->attach(new ButtonMqttObserver(button2, mqtt));
 #ifdef LIGHT_PIN
         light->attach(mqtt);
 #endif
