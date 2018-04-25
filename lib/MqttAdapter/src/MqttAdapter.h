@@ -20,10 +20,10 @@ public:
 
   void loop();
 
-  const char *name();
+  const char *fulltopic();
 private:
   const char *_name;
-  const char *_topic;
+  char *_fulltopic;
 };
 
 #endif // !MQTT_ADAPTER_CLASS

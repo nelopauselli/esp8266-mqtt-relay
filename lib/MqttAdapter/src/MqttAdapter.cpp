@@ -9,8 +9,17 @@ PubSubClient client(espClient);
 
 MqttAdapter::MqttAdapter(const char *server, int port, const char *topic, const char *name)
 {
-  _topic = topic;
+  Logger.trace("Init Mqtt");
+
+  _fulltopic = new char[strlen(topic) + 1 + strlen(name) + 1 + 1];
+  strcpy(_fulltopic, topic);
+  strcat(_fulltopic, "/");
+  strcat(_fulltopic, name);
+  strcat(_fulltopic, "/");
+  Logger.debug(_fulltopic);
+
   _name = name;
+  Logger.debug(_name);
 
   client.setServer(server, port);
 }
@@ -87,17 +96,16 @@ bool MqttAdapter::connect()
     }
   }
 
- subscribeDeviceTopic();
+  subscribeDeviceTopic();
 
   return true;
 }
 
-void MqttAdapter::subscribeDeviceTopic(){
-  char *topic = new char[strlen(_topic) +1 + strlen(_name) + 1];
-  strcpy(topic, _topic);
-  strcat(topic, "/");
-  strcat(topic, _name);
-  strcat(topic, "/#");
+void MqttAdapter::subscribeDeviceTopic()
+{
+  char *topic = new char[strlen(_fulltopic) + 2];
+  strcpy(topic, _fulltopic);
+  strcat(topic, "#");
 
   Logger.trace(String("subscribe to ") + topic);
   client.subscribe(topic);
@@ -120,17 +128,14 @@ void MqttAdapter::subscribe(const char *topic)
 
 void MqttAdapter::publish(const char *subtopic, const char *message)
 {
-  char *target = new char[strlen(_topic) + 1 + strlen(_name) + 1 + strlen(subtopic) + 1];
-  strcpy(target, _topic);
-  strcat(target, "/");
-  strcat(target, _name);
-  strcat(target, "/");
+  char *target = new char[strlen(_fulltopic) + strlen(subtopic) + 1];
+  strcpy(target, _fulltopic);
   strcat(target, subtopic);
 
   client.publish(target, message);
 }
 
-const char *MqttAdapter::name()
+const char *MqttAdapter::fulltopic()
 {
-  return _name;
+  return _fulltopic;
 }

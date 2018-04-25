@@ -225,8 +225,9 @@ void callback(char *topic, byte *payload, unsigned int length)
     message[length] = '\0';
     Serial.println(message);
 
-    char *subtopic = new char[strlen(topic) - strlen(mqtt->name()) + 1];
-    strcpy(subtopic, &topic[strlen(mqtt->name())]);
+    char *subtopic = topic + strlen(mqtt->fulltopic());
+    Serial.print("subtopic: ");
+    Serial.println(subtopic);
     MqttEventArgs *args = new MqttEventArgs(subtopic, message);
     mqtt->notify(args);
 
