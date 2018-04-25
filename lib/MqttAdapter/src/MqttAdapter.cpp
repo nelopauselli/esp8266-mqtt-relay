@@ -133,6 +133,8 @@ void MqttAdapter::publish(const char *subtopic, const char *message)
   strcat(target, subtopic);
 
   client.publish(target, message);
+
+  delete target;
 }
 
 const char *MqttAdapter::roottopic()

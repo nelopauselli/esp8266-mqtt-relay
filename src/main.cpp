@@ -481,6 +481,8 @@ void processDht()
         }
         else
         {
+            Logger.debug("publish dht");
+
             float humidityAvg = humidity / (dhtIndex + 1);
             float temperatureAvg = temperature / (dhtIndex + 1);
 
