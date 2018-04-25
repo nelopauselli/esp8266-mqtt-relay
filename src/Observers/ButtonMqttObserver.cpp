@@ -18,9 +18,9 @@ class ButtonMqttObserver : public Observer<ButtonEventArgs>
         strcat(_topic, button->name());
     }
 
-    void notify(ButtonEventArgs *args) override
+    void notify(ButtonEventArgs args) override
     {
-        if (args->pressed)
+        if (args.pressed)
             _mqtt->publish(_topic, "button pressed");
     }
 

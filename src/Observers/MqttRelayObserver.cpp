@@ -13,10 +13,10 @@ class MqttRelayObserver : public Observer<MqttEventArgs>
         _relay = relay;
     }
 
-    void notify(MqttEventArgs *args) override
+    void notify(MqttEventArgs args) override
     {
-        if (strcmp(_relay->name(), args->topic) == 0)
-            _relay->invoke(args->payload);
+        if (strcmp(_relay->name(), args.topic) == 0)
+            _relay->invoke(args.payload);
     }
 
   private:

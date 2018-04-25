@@ -37,7 +37,7 @@ class Button : public Subject<ButtonEventArgs>
 
 			ButtonEventArgs args;
 			args.pressed = true;
-			Subject::notify(&args);
+			Subject::notify(args);
 		}
 	}
 

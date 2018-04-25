@@ -225,10 +225,14 @@ void callback(char *topic, byte *payload, unsigned int length)
     message[length] = '\0';
     Serial.println(message);
 
-    char *subtopic = topic + strlen(mqtt->fulltopic());
+    char *subtopic = new char[strlen(topic) - strlen(mqtt->fulltopic()) + 1];
+    strcpy(subtopic, topic + strlen(mqtt->fulltopic()));
     Serial.print("subtopic: ");
     Serial.println(subtopic);
-    MqttEventArgs *args = new MqttEventArgs(subtopic, message);
+
+    MqttEventArgs args;
+    args.topic = subtopic;
+    args.payload = message;
     mqtt->notify(args);
 
     if (strcmp(topic, "/devices/search") == 0)
@@ -255,6 +259,7 @@ void callback(char *topic, byte *payload, unsigned int length)
         }
     }
     delete message;
+    delete subtopic;
 }
 
 bool reconnect()
@@ -386,7 +391,7 @@ void setup()
     telnetServer->add(new SetMqttCommand());
     telnetServer->add(new SetMqttTopicBaseCommand());
     telnetServer->add(new SetDeviceNameCommand());
-    
+
     telnetServer->start();
 
     Logger.trace("ready");

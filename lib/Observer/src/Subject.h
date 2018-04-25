@@ -16,7 +16,7 @@ class Subject
     {
         //TODO: Method not implemented yet
     }
-    void notify(TEventArgs *args)
+    void notify(TEventArgs args)
     {
         Observer<TEventArgs> *current = _observers;
         while (current != NULL)

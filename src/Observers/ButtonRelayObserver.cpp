@@ -13,9 +13,9 @@ class ButtonRelayObserver : public Observer<ButtonEventArgs>
         _relay = relay;
     }
 
-    void notify(ButtonEventArgs *args) override
+    void notify(ButtonEventArgs args) override
     {
-        if (args->pressed)
+        if (args.pressed)
             _relay->toggle();
     }
 
