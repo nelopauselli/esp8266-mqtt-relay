@@ -12,13 +12,15 @@
 #define MQTT_TOPIC_BASE_END 199
 #define OTA_URL_START 200
 #define OTA_URL_END 249
+#define DEVICE_NAME_START 250
+#define DEVICE_NAME_END 274
 
 SettingsClass::SettingsClass()
 {
 	EEPROM.begin(512);
 }
 
-void SettingsClass::writeWifi(int index, String value)
+void SettingsClass::writeWifi(int index, char *value)
 {
 	if (index == 1)
 		write(WIFI_START_1, WIFI_END_1, value);
@@ -34,7 +36,7 @@ char *SettingsClass::readWifi(int index)
 		return read(WIFI_START_2, WIFI_END_2);
 }
 
-void SettingsClass::writeMqttConnectionString(String value)
+void SettingsClass::writeMqttConnectionString(char *value)
 {
 	write(MQTT_CONNECTION_STRING_START, MQTT_CONNECTION_STRING_END, value);
 }
@@ -44,7 +46,7 @@ char *SettingsClass::readMqttConnectionString()
 	return read(MQTT_CONNECTION_STRING_START, MQTT_CONNECTION_STRING_END);
 }
 
-void SettingsClass::writeMqttTopicBase(String value)
+void SettingsClass::writeMqttTopicBase(char *value)
 {
 	write(MQTT_TOPIC_BASE_START, MQTT_TOPIC_BASE_END, value);
 }
@@ -54,7 +56,7 @@ char *SettingsClass::readMqttTopicBase()
 	return read(MQTT_TOPIC_BASE_START, MQTT_TOPIC_BASE_END);
 }
 
-void SettingsClass::writeOtaUrl(String value)
+void SettingsClass::writeOtaUrl(char *value)
 {
 	write(OTA_URL_START, OTA_URL_END, value);
 }
@@ -64,17 +66,27 @@ char *SettingsClass::readOtaUrl()
 	return read(OTA_URL_START, OTA_URL_END);
 }
 
-void SettingsClass::write(int from, int to, String value)
+void SettingsClass::writeDeviceName(char *value)
 {
-	if (value.length() > to - from)
+	write(DEVICE_NAME_START, DEVICE_NAME_END, value);
+}
+
+char *SettingsClass::readDeviceName()
+{
+	return read(DEVICE_NAME_START, DEVICE_NAME_END);
+}
+
+void SettingsClass::write(int from, int to, char *value)
+{
+	if (strlen(value) > to - from)
 	{
-		Logger.error("Length of '" + value + "' is bigger that " + String(to - from));
+		Logger.error(String("Length of '") + value + "' is bigger that " + String(to - from));
 		return;
 	}
 
 	int i = 0;
 	Logger.debug("Writing from " + String(from) + ": " + value);
-	for (i = 0; i < value.length(); ++i)
+	for (i = 0; i < strlen(value); ++i)
 	{
 		EEPROM.write(from + i, value[i]);
 	}

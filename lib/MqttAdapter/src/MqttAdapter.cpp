@@ -7,10 +7,10 @@
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-MqttAdapter::MqttAdapter(const char *server, int port, const char *name)
+MqttAdapter::MqttAdapter(const char *server, int port, const char *topic, const char *name)
 {
-  _name = new char[strlen(name) + 1];
-  strcpy(_name, name);
+  _topic = topic;
+  _name = name;
 
   client.setServer(server, port);
 }
@@ -47,10 +47,7 @@ bool MqttAdapter::connect(const char *userName, const char *password)
     }
   }
 
-  char *topic = new char[strlen(_name) + 3];
-  strcpy(topic, _name);
-  strcat(topic, "/#");
-  client.subscribe(topic);
+  subscribeDeviceTopic();
 
   return true;
 }
@@ -90,12 +87,20 @@ bool MqttAdapter::connect()
     }
   }
 
-  char *topic = new char[strlen(_name) + 3];
-  strcpy(topic, _name);
-  strcat(topic, "/#");
-  client.subscribe(topic);
+ subscribeDeviceTopic();
 
   return true;
+}
+
+void MqttAdapter::subscribeDeviceTopic(){
+  char *topic = new char[strlen(_topic) +1 + strlen(_name) + 1];
+  strcpy(topic, _topic);
+  strcat(topic, "/");
+  strcat(topic, _name);
+  strcat(topic, "/#");
+
+  Logger.trace(String("subscribe to ") + topic);
+  client.subscribe(topic);
 }
 
 bool MqttAdapter::connected()
@@ -115,15 +120,17 @@ void MqttAdapter::subscribe(const char *topic)
 
 void MqttAdapter::publish(const char *subtopic, const char *message)
 {
-  char *target = new char[strlen(_name) + 1 + strlen(subtopic) + 1];
-  strcpy(target, _name);
+  char *target = new char[strlen(_topic) + 1 + strlen(_name) + 1 + strlen(subtopic) + 1];
+  strcpy(target, _topic);
+  strcat(target, "/");
+  strcat(target, _name);
   strcat(target, "/");
   strcat(target, subtopic);
 
   client.publish(target, message);
 }
 
-char *MqttAdapter::name()
+const char *MqttAdapter::name()
 {
   return _name;
 }

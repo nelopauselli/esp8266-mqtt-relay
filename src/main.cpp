@@ -24,6 +24,8 @@ extern "C" {
 #include "Settings.h"
 #include "Commands/SetWifiCommand.cpp"
 #include "Commands/SetMqttCommand.cpp"
+#include "Commands/SetMqttTopicBaseCommand.cpp"
+#include "Commands/SetDeviceNameCommand.cpp"
 #include "Relay.cpp"
 #include "Observers/MqttRelayObserver.cpp"
 #include "Observers/ButtonRelayObserver.cpp"
@@ -300,7 +302,8 @@ bool initMQTT()
     {
         Logger.debug(String("Connecting to broker in ") + mqttServer + ":" + String(mqttPort));
         char *topic = Settings.readMqttTopicBase();
-        mqtt = new MqttAdapter(mqttServer, mqttPort, topic);
+        char *deviceName = Settings.readDeviceName();
+        mqtt = new MqttAdapter(mqttServer, mqttPort, topic, deviceName);
 
         relay1->attach(mqtt);
         mqtt->attach(new MqttRelayObserver(relay1));
@@ -380,6 +383,9 @@ void setup()
     telnetServer = new TelnetServer(23);
     telnetServer->add(new SetWifiCommand());
     telnetServer->add(new SetMqttCommand());
+    telnetServer->add(new SetMqttTopicBaseCommand());
+    telnetServer->add(new SetDeviceNameCommand());
+    
     telnetServer->start();
 
     Logger.trace("ready");

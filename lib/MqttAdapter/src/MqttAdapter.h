@@ -8,20 +8,22 @@
 class MqttAdapter : public Subject<MqttEventArgs>
 {
 public:
-  MqttAdapter(const char *server, int port, const char *  );
+  MqttAdapter(const char *server, int port, const char *topic, const char *name);
   bool connect(const char *userName, const char *password);
   bool connect();
   void setCallback(MQTT_CALLBACK_SIGNATURE);
   bool connected();
 
+  void subscribeDeviceTopic();
   void subscribe(const char *topic);
   void publish(const char *subtopic, const char *message);
 
   void loop();
 
-  char *name();
+  const char *name();
 private:
-  char *_name;
+  const char *_name;
+  const char *_topic;
 };
 
 #endif // !MQTT_ADAPTER_CLASS

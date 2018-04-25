@@ -5,20 +5,21 @@
 
 class SettingsClass
 {
-  public:
+public:
 	SettingsClass();
-	void writeWifi(int index, String value);
+	void writeWifi(int index, char *value);
 	char *readWifi(int index);
-	void writeMqttConnectionString(String value);
+	void writeMqttConnectionString(char *value);
 	char *readMqttConnectionString();
-	void writeMqttTopicBase(String value);
+	void writeMqttTopicBase(char *value);
 	char *readMqttTopicBase();
-	
-	void writeOtaUrl(String value);
+	void writeOtaUrl(char *value);
 	char *readOtaUrl();
+	void writeDeviceName(char *value);
+	char *readDeviceName();
 
-  private:
-	void write(int from, int to, String value);
+private:
+	void write(int from, int to, char *value);
 	char *read(int from, int to);
 };
 
