@@ -225,8 +225,8 @@ void callback(char *topic, byte *payload, unsigned int length)
     message[length] = '\0';
     Serial.println(message);
 
-    char *subtopic = new char[strlen(topic) - strlen(mqtt->fulltopic()) + 1];
-    strcpy(subtopic, topic + strlen(mqtt->fulltopic()));
+    char *subtopic = new char[strlen(topic) - strlen(mqtt->roottopic()) + 1];
+    strcpy(subtopic, topic + strlen(mqtt->roottopic()));
     Serial.print("subtopic: ");
     Serial.println(subtopic);
 
