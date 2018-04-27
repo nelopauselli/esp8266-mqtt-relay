@@ -134,6 +134,8 @@ void MqttAdapter::publish(const char *subtopic, const char *message)
 
   client.publish(target, message);
 
+  delay(10); //go message, go!
+
   delete target;
 }
 
