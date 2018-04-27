@@ -30,6 +30,7 @@ extern "C" {
 #include "Commands/SetDeviceNameCommand.cpp"
 #include "Relay.cpp"
 #include "Observers/MqttRelayObserver.cpp"
+#include "Observers/RelayMqttObserver.cpp"
 #include "Observers/ButtonRelayObserver.cpp"
 #include "Observers/ButtonMqttObserver.cpp"
 #include "Button.cpp"
@@ -313,10 +314,10 @@ bool initMQTT()
         char *deviceName = Settings.readDeviceName();
         mqtt = new MqttAdapter(mqttServer, mqttPort, topic, deviceName);
 
-        relay1->attach(mqtt);
+        relay1->attach(new RelayMqttObserver(relay1, mqtt));
         mqtt->attach(new MqttRelayObserver(relay1));
         button1->attach(new ButtonMqttObserver(button1, mqtt));
-        relay2->attach(mqtt);
+        relay2->attach(new RelayMqttObserver(relay2, mqtt));
         mqtt->attach(new MqttRelayObserver(relay2));
         button2->attach(new ButtonMqttObserver(button2, mqtt));
 #ifdef LIGHT_PIN
@@ -351,6 +352,8 @@ void checkForUpdates()
         Logger.trace("HTTP_UPDATE_OK");
         break;
     }
+
+    delete url;
 }
 #endif
 

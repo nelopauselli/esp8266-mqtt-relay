@@ -3,10 +3,11 @@
 
 #include <Arduino.h>
 #include "Logger.h"
-#include "MqttAdapter.h"
+#include "Subject.h"
 #include "SoftClockTime.h"
+#include "RelayEventArgs.h"
 
-class Relay
+class Relay : public Subject<RelayEventArgs>
 {
   public:
 	Relay(uint8_t pin, const char *name, TimeSpan duration)
@@ -64,21 +65,17 @@ class Relay
 
 	void publishState()
 	{
-		if (_mqtt != NULL)
-		{
-			int state = !digitalRead(_pin);
-			if (state)
-			{
-				char *message = new char[255];
-				strcpy(message, "state on until ");
-				strcat(message, _offAt->toCharArray());
-				_mqtt->publish(_name, message);
-			}
-			else
-			{
-				_mqtt->publish(_name, "state off");
-			}
-		}
+		int state = !digitalRead(_pin);
+
+		RelayEventArgs args;
+		args.state = state ? "state on" : "state off";
+		/*
+		char *message = new char[255];
+			strcpy(message, "state on until ");
+			strcat(message, _offAt->toCharArray());
+		*/
+		args.text = "state on until XX:XX:XX";
+		Subject::notify(args);
 	}
 
 	bool process()
@@ -129,17 +126,11 @@ class Relay
 		}
 	}
 
-	void attach(MqttAdapter *mqtt)
-	{
-		_mqtt = mqtt;
-	}
-
   private:
 	const char *_name;
 	uint8_t _pin;
 	Time *_offAt = NULL;
 	TimeSpan _duration;
-	MqttAdapter *_mqtt;
 };
 
 #endif
