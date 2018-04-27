@@ -5,22 +5,22 @@ extern "C" {
 #include "user_interface.h"
 }
 
-void traceMemoryLeak(void (*callback)())
+void traceMemoryLeak(const char *name, void (*callback)())
 {
-    uint32_t freeMemoryAtStart = system_get_free_heap_size();
+    uint32 freeMemoryAtStart = system_get_free_heap_size();
 
     callback();
 
-    uint32_t freeMemoryAtEnd = system_get_free_heap_size();
+    uint32 freeMemoryAtEnd = system_get_free_heap_size();
 
     if (freeMemoryAtEnd < freeMemoryAtStart)
     {
-        Logger.error("Lost memory: " + String(freeMemoryAtStart - freeMemoryAtEnd) + " bytes.");
+        Logger.error("Lost memory in " + String(name) + ": " + String(freeMemoryAtStart - freeMemoryAtEnd) + " bytes.");
     }
 }
 
-uint32_t lastFreeMemory = 0;
-uint32_t freeMemory = 0;
+uint32 lastFreeMemory = 0;
+uint32 freeMemory = 0;
 
 void traceFreeMemory()
 {

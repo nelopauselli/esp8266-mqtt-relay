@@ -1,6 +1,8 @@
 #include <Arduino.h>
 
 #define OTA_ENABLED
+#define OTA_ON_LOOP
+
 #define TEST_MODE
 
 extern "C" {
@@ -352,6 +354,11 @@ void checkForUpdates()
 }
 #endif
 
+void publishInDevices()
+{
+    mqtt->publish("/casa/devices", "hola world!");
+}
+
 void setup()
 {
 #ifdef TEST_MODE
@@ -376,6 +383,12 @@ void setup()
 #endif
 
         initMQTT();
+
+        traceFreeMemory();
+        traceMemoryLeak("publish 1", &publishInDevices);
+        traceMemoryLeak("publish 2", &publishInDevices);
+        traceFreeMemory();
+
         initClock();
     }
     else
@@ -501,6 +514,10 @@ void processDht()
 long lastBlink;
 bool statusBlink = true;
 
+#ifdef OTA_ON_LOOP
+int lastUpdate = 0;
+#endif
+
 void loop(void)
 {
     traceFreeMemory();
@@ -509,9 +526,17 @@ void loop(void)
 
     if (!WifiAdapter.isAccessPoint())
     {
+#ifdef OTA_ON_LOOP
+        if (lastUpdate + 10000 < millis())
+        {
+            checkForUpdates();
+            lastUpdate = millis();
+        }
+#endif
+
         loopMQTT();
 
-        traceMemoryLeak(&processButtons);
+        traceMemoryLeak("processButtons", &processButtons);
 
 #ifdef DHT_PIN
         processDht();
@@ -519,9 +544,9 @@ void loop(void)
 
         if (lastProcess + 5000 < millis())
         {
-            traceMemoryLeak(&processRelays);
+            traceMemoryLeak("processRelays", &processRelays);
 #ifdef LIGHT_PIN
-            traceMemoryLeak(&processLights);
+            traceMemoryLeak("processLights", &processLights);
             lastProcess = millis();
 #endif
         }
