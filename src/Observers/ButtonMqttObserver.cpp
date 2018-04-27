@@ -12,10 +12,7 @@ class ButtonMqttObserver : public Observer<ButtonEventArgs>
     ButtonMqttObserver(Button *button, MqttAdapter *mqtt)
     {
         _mqtt = mqtt;
-
-        _topic = new char[strlen(button->name()) + 2];
-        strcpy(_topic, "/");
-        strcat(_topic, button->name());
+        _topic = button->name();
     }
 
     void notify(ButtonEventArgs args) override
@@ -26,7 +23,7 @@ class ButtonMqttObserver : public Observer<ButtonEventArgs>
 
   private:
     MqttAdapter *_mqtt = NULL;
-    char *_topic = NULL;
+    const char *_topic = NULL;
 };
 
 #endif

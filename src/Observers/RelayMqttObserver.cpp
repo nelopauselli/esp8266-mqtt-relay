@@ -12,10 +12,7 @@ class RelayMqttObserver : public Observer<RelayEventArgs>
     RelayMqttObserver(Relay *relay, MqttAdapter *mqtt)
     {
         _mqtt = mqtt;
-
-        _topic = new char[strlen(relay->name()) + 2];
-        strcpy(_topic, "/");
-        strcat(_topic, relay->name());
+        _topic = relay->name();
     }
 
     void notify(RelayEventArgs args) override
@@ -25,7 +22,7 @@ class RelayMqttObserver : public Observer<RelayEventArgs>
 
   private:
     MqttAdapter *_mqtt = NULL;
-    char *_topic = NULL;
+    const char *_topic = NULL;
 };
 
 #endif
