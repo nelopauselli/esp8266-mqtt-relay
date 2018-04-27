@@ -1,8 +1,16 @@
 #include "Arduino.h"
 #include "Logger.h"
 
+#define DEBUG_MEMORY
+
 extern "C" {
 #include "user_interface.h"
+}
+
+void debugMemory()
+{
+    Serial.print("[MEMORY],");
+    Serial.println(system_get_free_heap_size());
 }
 
 void traceMemoryLeak(const char *name, void (*callback)())
@@ -30,4 +38,8 @@ void traceFreeMemory()
         Logger.debug("Free Memory: " + String(freeMemory) + " bytes");
         lastFreeMemory = freeMemory;
     }
+
+#ifdef DEBUG_MEMORY
+    debugMemory();
+#endif
 }
