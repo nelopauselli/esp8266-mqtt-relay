@@ -151,8 +151,8 @@ void initHardware()
 
     Logger.trace("Init relays...");
 
-    relay1 = new Relay(RELAY1, "extractor", TimeSpan{1, 0, 0});
-    relay2 = new Relay(RELAY2, "toallero", TimeSpan{2, 0, 0});
+    relay1 = new Relay(RELAY1, "toallero", TimeSpan{1, 0, 0});
+    relay2 = new Relay(RELAY2, "extractor", TimeSpan{1, 0, 0});
 
     Logger.trace("Init buttons...");
 
