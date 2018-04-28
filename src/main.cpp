@@ -3,7 +3,7 @@
 #define OTA_ENABLED
 #define OTA_ON_LOOP
 
-//#define TEST_MODE
+#define TEST_MODE
 #ifdef TEST_MODE
 #define DEBUG_TO_SERIAL
 #endif
