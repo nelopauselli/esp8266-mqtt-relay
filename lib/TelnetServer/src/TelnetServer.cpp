@@ -1,5 +1,6 @@
 #include <TelnetServer.h>
 
+#include "Logger.h"
 #include "Commands/PingPongCommand.cpp"
 #include "Commands/RestartCommand.cpp"
 #include "Commands/ResetCommand.cpp"
@@ -43,14 +44,14 @@ void TelnetServer::start()
 
     _stated = true;
     
-    Serial.println("Telnet is ready!");
+    Logger.trace("Telnet is ready!");
 }
 
 void TelnetServer::process()
 {
     if (!_stated)
     {
-        Serial.println("Telnet should be started before process!");
+        Logger.error("Telnet should be started before process!");
         return;
     }
 
@@ -129,7 +130,7 @@ void TelnetServer::process()
 
             // ending command with a '\0'
             buffer[bufferIndex] = '\0';
-            Serial.println(buffer);
+            Logger.debug(buffer);
 
             if (strlen(buffer) > 0) // skip blank command
             {

@@ -29,8 +29,6 @@ class Logger_t
 	void error(const char message[]);
 	void error(const Printable &message);
 
-	void flush();
-
   private:
 	bool _debugging;
 	Appender *appenders[5];

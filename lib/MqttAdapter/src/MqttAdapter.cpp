@@ -35,18 +35,16 @@ bool MqttAdapter::connect(const char *userName, const char *password)
   // Loop until we're reconnected
   while (!client.connected())
   {
-    Serial.print("Attempting MQTT connection...");
+    Logger.trace("Attempting MQTT connection...");
     // Attempt to connect
     Logger.debug("connecting using " + String(userName));
     if (client.connect(_name, userName, password))
     {
-      Serial.println("connected");
+      Logger.trace("connected");
     }
     else
     {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Logger.error("failed, rc=" + String(client.state()) + " try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
       count++;
@@ -67,25 +65,22 @@ bool MqttAdapter::connect()
   // Loop until we're reconnected
   while (!client.connected())
   {
-    Serial.print("Attempting MQTT connection...");
+    Logger.trace("Attempting MQTT connection...");
     // Attempt to connect
     if (client.connect(_name))
     {
-      Serial.println("connected");
+      Logger.trace("connected");
     }
     else
     {
       if (WiFi.status() != WL_CONNECTED)
       {
-        Serial.println("Connection to WiFi has been lost. Attempting to reconnect....");
-        //wifiManager.autoConnect(apName.c_str(), apPass.c_str());
+        Logger.error("Connection to WiFi has been lost. Attempting to reconnect....");
         return false;
       }
       else
       {
-        Serial.print("failed, rc=");
-        Serial.print(client.state());
-        Serial.println(" try again in 5 seconds");
+        Logger.error("failed, rc=" + String(client.state()) + " try again in 5 seconds");
         // Wait 5 seconds before retrying
         delay(5000);
       }

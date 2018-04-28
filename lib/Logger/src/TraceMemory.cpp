@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "Logger.h"
 
-#define DEBUG_MEMORY
+//#define DEBUG_MEMORY
 
 extern "C" {
 #include "user_interface.h"
@@ -9,8 +9,7 @@ extern "C" {
 
 void debugMemory()
 {
-    Serial.print("[MEMORY],");
-    Serial.println(system_get_free_heap_size());
+    Logger.debug("[MEMORY]," + String(system_get_free_heap_size()));
 }
 
 void traceMemoryLeak(const char *name, void (*callback)())

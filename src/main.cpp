@@ -3,7 +3,10 @@
 #define OTA_ENABLED
 #define OTA_ON_LOOP
 
-#define TEST_MODE
+//#define TEST_MODE
+#ifdef TEST_MODE
+#define DEBUG_TO_SERIAL
+#endif
 
 extern "C" {
 #include "user_interface.h"
@@ -117,14 +120,14 @@ void test4()
 void tests()
 {
     Serial.begin(115200);
-    Serial.println("Start unit tests");
+    Logger.trace("Start unit tests");
 
     test1();
     test2();
     test3();
     test4();
 
-    Serial.println("End unit tests");
+    Logger.trace("End unit tests");
 
     Assert.summary();
 
@@ -139,7 +142,9 @@ void initLogger()
     Logger.cleanLog();
     Logger.debugging(false);
 
+#ifdef DEBUG_TO_SERIAL
     Logger.add(new SerialAppender());
+#endif
 }
 
 void initHardware()
@@ -219,19 +224,15 @@ void device_search()
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
+    Logger.debug("Message arrived [" + String(topic) + "] ");
 
     char *message = new char[length + 1];
     memcpy(message, payload, length);
     message[length] = '\0';
-    Serial.println(message);
+    Logger.debug(message);
 
     char *subtopic = new char[strlen(topic) - strlen(mqtt->roottopic()) + 1];
     strcpy(subtopic, topic + strlen(mqtt->roottopic()));
-    Serial.print("subtopic: ");
-    Serial.println(subtopic);
 
     MqttEventArgs args;
     args.topic = subtopic;
@@ -530,7 +531,7 @@ void loop(void)
     if (!WifiAdapter.isAccessPoint())
     {
 #ifdef OTA_ON_LOOP
-        if (lastUpdate + 10000 < millis())
+        if (lastUpdate + 60 * 1000 < millis())
         {
             checkForUpdates();
             lastUpdate = millis();

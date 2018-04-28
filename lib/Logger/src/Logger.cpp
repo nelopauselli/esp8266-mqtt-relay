@@ -1,14 +1,8 @@
 #include <Logger.h>
 #include <FS.h> // Include the SPIFFS library
 
-// Para activar el log por serial, además hay que liberar los pines RX y TX de donde se estén usando.
-#define LOG_TO_SERIAL
-
 Logger_t::Logger_t()
 {
-#ifdef LOG_TO_SERIAL
-    Serial.begin(115200);
-#endif
 }
 
 void Logger_t::add(Appender *appender)
@@ -64,13 +58,6 @@ void Logger_t::trace(const Printable &message)
     file.print("\t[TRACE] ");
     file.println(message);
     file.close();
-
-#ifdef LOG_TO_SERIAL
-    Serial.print("[TRACE at ");
-    Serial.print(millis());
-    Serial.print("]\t");
-    Serial.println(message);
-#endif
 }
 
 void Logger_t::debug(const String &message)
@@ -110,13 +97,6 @@ void Logger_t::debug(const Printable &message)
     file.print("]\t");
     file.println(message);
     file.close();
-
-#ifdef LOG_TO_SERIAL
-    Serial.print("[DEBUG at ");
-    Serial.print(millis());
-    Serial.print("]\t");
-    Serial.println(message);
-#endif
 }
 
 void Logger_t::error(const String &message)
@@ -131,13 +111,6 @@ void Logger_t::error(const char *message)
     file.print("\t[ERROR] ");
     file.println(message);
     file.close();
-
-#ifdef LOG_TO_SERIAL
-    Serial.print("[ERROR at ");
-    Serial.print(millis());
-    Serial.print("]\t");
-    Serial.println(message);
-#endif
 }
 
 void Logger_t::error(const Printable &message)
@@ -147,20 +120,6 @@ void Logger_t::error(const Printable &message)
     file.print("\t[ERROR] ");
     file.println(message);
     file.close();
-
-#ifdef LOG_TO_SERIAL
-    Serial.print("[ERROR at ");
-    Serial.print(millis());
-    Serial.print("]\t");
-    Serial.println(message);
-#endif
-}
-
-void Logger_t::flush()
-{
-#ifdef LOG_TO_SERIAL
-    Serial.flush();
-#endif
 }
 
 Logger_t Logger;
