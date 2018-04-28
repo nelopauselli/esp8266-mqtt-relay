@@ -358,9 +358,10 @@ void checkForUpdates()
 }
 #endif
 
-void publishInDevices()
+void publishResetReason()
 {
-    mqtt->publish("/casa/devices", "hola world!");
+    String reason = ESP.getResetReason();
+    mqtt->publish("/device/reset", reason.c_str());
 }
 
 void setup()
@@ -388,10 +389,7 @@ void setup()
 
         initMQTT();
 
-        traceFreeMemory();
-        traceMemoryLeak("publish 1", &publishInDevices);
-        traceMemoryLeak("publish 2", &publishInDevices);
-        traceFreeMemory();
+        traceMemoryLeak("publish", &publishResetReason);
 
         initClock();
     }
