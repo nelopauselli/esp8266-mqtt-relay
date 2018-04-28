@@ -57,9 +57,9 @@ extern "C" {
 #define RELAY2 D6
 #define BUTTON1 D3
 #define BUTTON2 D2
-#define LED_ACTIVITY D4
+#define LED_ACTIVITY D7
 #define DHT_PIN D1
-#define LIGHT_PIN D7
+#define LIGHT_PIN D4
 #endif
 
 #ifdef DHT_PIN
