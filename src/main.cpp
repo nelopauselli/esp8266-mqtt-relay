@@ -4,9 +4,8 @@
 #define OTA_ON_LOOP
 
 #define TEST_MODE
-#ifdef TEST_MODE
 #define DEBUG_TO_SERIAL
-#endif
+#define DEBUG_BY_HTTP
 
 extern "C" {
 #include "user_interface.h"
@@ -21,6 +20,9 @@ extern "C" {
 
 #include "Logger.h"
 #include "Appenders/SerialAppender.cpp"
+#ifdef DEBUG_BY_HTTP
+#include "Appenders/HttpAppender.cpp"
+#endif
 #include "TraceMemory.cpp"
 #include "NTPClient.h"
 #include "Splitter.h"
@@ -386,7 +388,9 @@ void setup()
 #ifdef OTA_ENABLED
         checkForUpdates();
 #endif
-
+#ifdef DEBUG_BY_HTTP
+    Logger.add(new HttpAppender(24));
+#endif
         initMQTT();
 
         traceMemoryLeak("publish", &publishResetReason);
