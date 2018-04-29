@@ -2,10 +2,11 @@
 
 #define OTA_ENABLED
 #define OTA_ON_LOOP
+#define OTA_INTERVAL 5000
 
 #define TEST_MODE
 #define DEBUG_TO_SERIAL
-#define DEBUG_BY_HTTP
+//#define DEBUG_BY_HTTP
 
 extern "C" {
 #include "user_interface.h"
@@ -533,7 +534,7 @@ void loop(void)
     if (!WifiAdapter.isAccessPoint())
     {
 #ifdef OTA_ON_LOOP
-        if (lastUpdate + 60 * 1000 < millis())
+        if (lastUpdate + OTA_INTERVAL < millis())
         {
             checkForUpdates();
             lastUpdate = millis();
