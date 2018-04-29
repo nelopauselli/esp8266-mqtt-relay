@@ -361,7 +361,7 @@ void checkForUpdates()
 void publishResetReason()
 {
     String reason = ESP.getResetReason();
-    mqtt->publish("/device/reset", reason.c_str());
+    mqtt->publish("device/reset", reason.c_str());
 }
 
 void setup()
