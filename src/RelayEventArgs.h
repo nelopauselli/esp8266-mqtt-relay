@@ -4,7 +4,6 @@
 struct RelayEventArgs
 {
     const char *state;
-    const char *text;
 };
 
 #endif

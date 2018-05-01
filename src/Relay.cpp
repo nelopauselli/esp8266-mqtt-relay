@@ -68,13 +68,18 @@ class Relay : public Subject<RelayEventArgs>
 		int state = !digitalRead(_pin);
 
 		RelayEventArgs args;
-		args.state = state ? "state on" : "state off";
-		/*
-		char *message = new char[255];
+		if (state)
+		{
+			char *message = new char[24];
 			strcpy(message, "state on until ");
 			strcat(message, _offAt->toCharArray());
-		*/
-		args.text = "state on until XX:XX:XX";
+			
+			args.state = reinterpret_cast<const char *>(message);
+		}
+		else
+		{
+			args.state = "state off";
+		}
 		Subject::notify(args);
 	}
 
