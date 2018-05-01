@@ -47,7 +47,7 @@ void Logger_t::trace(const char *message)
     {
         Appender *appender = appenders[i];
         if (appender != NULL)
-            appender->write(Levels::TRACE, message);
+            appender->write("[TRACE] ", message);
     }
 }
 
@@ -82,7 +82,7 @@ void Logger_t::debug(const char *message)
     {
         Appender *appender = appenders[i];
         if (appender != NULL)
-            appender->write(Levels::DEBUG, message);
+            appender->write("[DEBUG] ", message);
     }
 }
 

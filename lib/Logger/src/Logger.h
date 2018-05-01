@@ -5,7 +5,6 @@
 #include <Printable.h>
 
 #include <Appenders/Appender.h>
-#include <Appenders/Levels.h>
 
 class Logger_t
 {

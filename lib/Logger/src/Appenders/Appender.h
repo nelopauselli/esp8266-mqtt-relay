@@ -1,8 +1,6 @@
 #ifndef APPENDER_CLASS
 #define APPENDER_CLASS
 
-#include "Levels.h"
-
 class Appender
 {
   public:
