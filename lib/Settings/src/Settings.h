@@ -5,7 +5,7 @@
 
 class SettingsClass
 {
-public:
+  public:
 	SettingsClass();
 	void writeWifi(int index, char *value);
 	char *readWifi(int index);
@@ -17,8 +17,12 @@ public:
 	char *readOtaUrl();
 	void writeDeviceName(char *value);
 	char *readDeviceName();
+	void writeRelayName(int index, char *value);
+	char *readRelayName(int index);
+	void writeButtonName(int index, char *value);
+	char *readButtonName(int index);
 
-private:
+  private:
 	void write(int from, int to, char *value);
 	char *read(int from, int to);
 };

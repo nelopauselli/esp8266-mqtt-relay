@@ -14,6 +14,14 @@
 #define OTA_URL_END 249
 #define DEVICE_NAME_START 250
 #define DEVICE_NAME_END 274
+#define RELAY_NAME_START_1 275
+#define RELAY_NAME_END_1 289
+#define RELAY_NAME_START_2 290
+#define RELAY_NAME_END_2 304
+#define BUTTON_NAME_START_1 305
+#define BUTTON_NAME_END_1 319
+#define BUTTON_NAME_START_2 320
+#define BUTTON_NAME_END_2 334
 
 SettingsClass::SettingsClass()
 {
@@ -74,6 +82,38 @@ void SettingsClass::writeDeviceName(char *value)
 char *SettingsClass::readDeviceName()
 {
 	return read(DEVICE_NAME_START, DEVICE_NAME_END);
+}
+
+void SettingsClass::writeRelayName(int index, char *value)
+{
+	if (index == 1)
+		write(RELAY_NAME_START_1, RELAY_NAME_END_1, value);
+	else
+		write(RELAY_NAME_START_2, RELAY_NAME_END_2, value);
+}
+
+char *SettingsClass::readRelayName(int index)
+{
+	if (index == 1)
+		return read(RELAY_NAME_START_1, RELAY_NAME_END_1);
+	else
+		return read(RELAY_NAME_START_2, RELAY_NAME_END_2);
+}
+
+void SettingsClass::writeButtonName(int index, char *value)
+{
+	if (index == 1)
+		write(BUTTON_NAME_START_1, BUTTON_NAME_END_1, value);
+	else
+		write(BUTTON_NAME_START_2, BUTTON_NAME_END_2, value);
+}
+
+char *SettingsClass::readButtonName(int index)
+{
+	if (index == 1)
+		return read(BUTTON_NAME_START_1, BUTTON_NAME_END_1);
+	else
+		return read(BUTTON_NAME_START_2, BUTTON_NAME_END_2);
 }
 
 void SettingsClass::write(int from, int to, char *value)

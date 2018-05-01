@@ -1,12 +1,16 @@
 #include <Arduino.h>
 
 #define OTA_ENABLED
-#define OTA_ON_LOOP
-#define OTA_INTERVAL 5000
 
+#ifndef RELEASE
+#define OTA_INTERVAL 5000
+#endif
+
+#ifndef RELEASE
 #define TEST_MODE
 #define DEBUG_TO_SERIAL
 //#define DEBUG_BY_HTTP
+#endif
 
 extern "C" {
 #include "user_interface.h"
@@ -34,6 +38,8 @@ extern "C" {
 #include "Commands/SetMqttCommand.cpp"
 #include "Commands/SetMqttTopicBaseCommand.cpp"
 #include "Commands/SetDeviceNameCommand.cpp"
+#include "Commands/SetRelayNameCommand.cpp"
+#include "Commands/SetButtonNameCommand.cpp"
 #include "Relay.cpp"
 #include "Observers/MqttRelayObserver.cpp"
 #include "Observers/RelayMqttObserver.cpp"
@@ -159,14 +165,18 @@ void initHardware()
 
     Logger.trace("Init relays...");
 
-    relay1 = new Relay(RELAY1, "toallero", TimeSpan{1, 0, 0});
-    relay2 = new Relay(RELAY2, "extractor", TimeSpan{1, 0, 0});
+    Settings.writeRelayName(1, "toallero");
+    Settings.writeRelayName(2, "extractor");
+    relay1 = new Relay(RELAY1, Settings.readRelayName(1), TimeSpan{1, 0, 0});
+    relay2 = new Relay(RELAY2, Settings.readRelayName(2), TimeSpan{1, 0, 0});
 
     Logger.trace("Init buttons...");
 
-    button1 = new Button(BUTTON1, "boton-azul");
+    Settings.writeButtonName(1, "boton-azul");
+    Settings.writeButtonName(2, "boton-rojo");
+    button1 = new Button(BUTTON1, Settings.readButtonName(1));
     button1->attach(new ButtonRelayObserver(relay1));
-    button2 = new Button(BUTTON2, "boton-rojo");
+    button2 = new Button(BUTTON2, Settings.readButtonName(2));
     button2->attach(new ButtonRelayObserver(relay2));
 
 #ifdef DHT_PIN
@@ -390,7 +400,7 @@ void setup()
         checkForUpdates();
 #endif
 #ifdef DEBUG_BY_HTTP
-    Logger.add(new HttpAppender(24));
+        Logger.add(new HttpAppender(24));
 #endif
         initMQTT();
 
@@ -411,6 +421,8 @@ void setup()
     telnetServer->add(new SetMqttCommand());
     telnetServer->add(new SetMqttTopicBaseCommand());
     telnetServer->add(new SetDeviceNameCommand());
+    telnetServer->add(new SetRelayNameCommand());
+    telnetServer->add(new SetButtonNameCommand());
 
     telnetServer->start();
 
@@ -521,7 +533,7 @@ void processDht()
 long lastBlink;
 bool statusBlink = true;
 
-#ifdef OTA_ON_LOOP
+#ifdef OTA_INTERVAL
 int lastUpdate = 0;
 #endif
 
@@ -533,7 +545,7 @@ void loop(void)
 
     if (!WifiAdapter.isAccessPoint())
     {
-#ifdef OTA_ON_LOOP
+#ifdef OTA_INTERVAL
         if (lastUpdate + OTA_INTERVAL < millis())
         {
             checkForUpdates();
