@@ -7,3 +7,5 @@ firmware to handler relays (and DHT sensor) using mqtt message
 * implement GET Commands by each SET Command (don't show passwords)
 * improve tests schema
 
+## Known issues
+* mqtt incoming messages are duplicate after reconnect to wifi
