@@ -11,7 +11,6 @@ extern "C" {
 }
 
 #include "MqttAdapter.h"
-#include "MqttEventArgs.h"
 
 #ifdef TEST_MODE
 #include "ArduinoUnitTest.h"
