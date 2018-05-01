@@ -3,7 +3,8 @@
 #define OTA_ENABLED
 
 #ifndef RELEASE
-#define OTA_INTERVAL 5000
+// probando el comando para udpate
+//#define OTA_INTERVAL 60000
 #endif
 
 #ifndef RELEASE
@@ -79,6 +80,7 @@ DHT dht;
 #ifdef OTA_ENABLED
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
+#include "Commands/UpdateFromOTACommand.cpp"
 #endif
 
 Relay *relay1;
@@ -423,7 +425,9 @@ void setup()
     telnetServer->add(new SetDeviceNameCommand());
     telnetServer->add(new SetRelayNameCommand());
     telnetServer->add(new SetButtonNameCommand());
-
+#ifdef OTA_ENABLED
+    telnetServer->add(new UpdateFromOTACommand());
+#endif
     telnetServer->start();
 
     Logger.trace("ready");
