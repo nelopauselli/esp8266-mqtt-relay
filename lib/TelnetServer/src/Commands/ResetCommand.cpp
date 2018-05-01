@@ -10,7 +10,10 @@ class ResetCommand : public Command
     {
         if (strcmp(line, "RESET") == 0)
         {
-            socket->write("OK\r\n");
+            socket->write("BYE BYE\r\n");
+            delay(100);
+
+            socket->stop();
             delay(100);
 
             ESP.reset();
