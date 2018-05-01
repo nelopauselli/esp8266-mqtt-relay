@@ -2,6 +2,7 @@
 
 #include "Logger.h"
 #include "Commands/PingPongCommand.cpp"
+#include "Commands/ExitCommand.cpp"
 #include "Commands/RestartCommand.cpp"
 #include "Commands/ResetCommand.cpp"
 #include "Commands/NotFoundCommand.cpp"
@@ -33,6 +34,7 @@ void TelnetServer::add(Command *command)
 void TelnetServer::start()
 {
     // complete the commands list with help and NotFound
+    add(new ExitCommand());
     add(new RestartCommand());
     add(new ResetCommand());
     add(new HelpCommand(commands));
