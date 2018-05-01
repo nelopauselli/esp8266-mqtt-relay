@@ -155,15 +155,11 @@ void initHardware()
 
     Logger.trace("Init relays...");
 
-    Settings.writeRelayName(1, "toallero");
-    Settings.writeRelayName(2, "extractor");
     relay1 = new Relay(RELAY1, Settings.readRelayName(1), TimeSpan{1, 0, 0});
     relay2 = new Relay(RELAY2, Settings.readRelayName(2), TimeSpan{1, 0, 0});
 
     Logger.trace("Init buttons...");
 
-    Settings.writeButtonName(1, "boton-azul");
-    Settings.writeButtonName(2, "boton-rojo");
     button1 = new Button(BUTTON1, Settings.readButtonName(1));
     button1->attach(new ButtonRelayObserver(relay1));
     button2 = new Button(BUTTON2, Settings.readButtonName(2));
