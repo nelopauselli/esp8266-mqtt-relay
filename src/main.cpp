@@ -1,12 +1,5 @@
 #include <Arduino.h>
 
-#define OTA_ENABLED
-
-#ifndef RELEASE
-// probando el comando para udpate
-//#define OTA_INTERVAL 60000
-#endif
-
 #ifndef RELEASE
 #define TEST_MODE
 #define DEBUG_TO_SERIAL
@@ -41,6 +34,7 @@ extern "C" {
 #include "Commands/SetDeviceNameCommand.cpp"
 #include "Commands/SetRelayNameCommand.cpp"
 #include "Commands/SetButtonNameCommand.cpp"
+#include "Commands/UpdateFromOTACommand.cpp"
 #include "Relay.cpp"
 #include "Observers/MqttRelayObserver.cpp"
 #include "Observers/RelayMqttObserver.cpp"
@@ -75,12 +69,6 @@ extern "C" {
 #ifdef DHT_PIN
 #include <DHT.h>
 DHT dht;
-#endif
-
-#ifdef OTA_ENABLED
-#include <ESP8266HTTPClient.h>
-#include <ESP8266httpUpdate.h>
-#include "Commands/UpdateFromOTACommand.cpp"
 #endif
 
 Relay *relay1;
@@ -345,34 +333,6 @@ bool initMQTT()
     return false;
 }
 
-#ifdef OTA_ENABLED
-void checkForUpdates()
-{
-    char *url = Settings.readOtaUrl();
-
-    Logger.trace(String("Searching firmware updates in ") + url);
-    Logger.debug(String("MD5 Checksum: ") + ESP.getSketchMD5());
-
-    t_httpUpdate_return ret = ESPhttpUpdate.update(url);
-    switch (ret)
-    {
-    case HTTP_UPDATE_FAILED:
-        Logger.error(String("HTTP_UPDATE_FAIL Error. ") + String(ESPhttpUpdate.getLastError()) + ": " + ESPhttpUpdate.getLastErrorString());
-        break;
-
-    case HTTP_UPDATE_NO_UPDATES:
-        Logger.trace("HTTP_UPDATE_NO_UPDATES");
-        break;
-
-    case HTTP_UPDATE_OK:
-        Logger.trace("HTTP_UPDATE_OK");
-        break;
-    }
-
-    delete url;
-}
-#endif
-
 void publishResetReason()
 {
     String reason = ESP.getResetReason();
@@ -398,9 +358,6 @@ void setup()
 
     if (WifiAdapter.connect())
     {
-#ifdef OTA_ENABLED
-        checkForUpdates();
-#endif
 #ifdef DEBUG_BY_HTTP
         Logger.add(new HttpAppender(24));
 #endif
@@ -425,9 +382,7 @@ void setup()
     telnetServer->add(new SetDeviceNameCommand());
     telnetServer->add(new SetRelayNameCommand());
     telnetServer->add(new SetButtonNameCommand());
-#ifdef OTA_ENABLED
     telnetServer->add(new UpdateFromOTACommand());
-#endif
     telnetServer->start();
 
     Logger.trace("ready");
@@ -537,10 +492,6 @@ void processDht()
 long lastBlink;
 bool statusBlink = true;
 
-#ifdef OTA_INTERVAL
-int lastUpdate = 0;
-#endif
-
 void loop(void)
 {
     traceFreeMemory();
@@ -549,14 +500,6 @@ void loop(void)
 
     if (!WifiAdapter.isAccessPoint())
     {
-#ifdef OTA_INTERVAL
-        if (lastUpdate + OTA_INTERVAL < millis())
-        {
-            checkForUpdates();
-            lastUpdate = millis();
-        }
-#endif
-
         loopMQTT();
 
         traceMemoryLeak("processButtons", &processButtons);
