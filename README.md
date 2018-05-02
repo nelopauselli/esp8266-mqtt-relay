@@ -26,7 +26,8 @@ Firmware to handle relays, buttons and DHT sensor using mqtt message
 
 ## Device sample
 |working...|complete|
-|![Device](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-1.jpg  "") | ![Device](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-2.jpg  "")|
+--- | --- | ---
+|![Device](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-1.jpg  "") | ![Device](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-2.jpg  "") |
 
 
 ## TODO
