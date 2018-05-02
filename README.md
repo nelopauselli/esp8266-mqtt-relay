@@ -1,5 +1,5 @@
 # esp8266-mqtt-relay
-firmware to handler relays (and DHT sensor) using mqtt message
+Firmware to handle relays, buttons and DHT sensor using mqtt message
 
 ## Features
 * Handle two relay.
