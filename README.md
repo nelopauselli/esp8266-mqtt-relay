@@ -1,11 +1,11 @@
 # esp8266-mqtt-relay
-Firmware to handle relays, buttons and DHT sensor using mqtt message
+Firmware to handle relays, buttons and DHT sensor using mqtt message.
 
 ## Features
-* Handle two relay.
-* Handle two buttons.
-* Handle DHT sensor.
-* Handle LED light.
+* Handle two relay with timer to turn off.
+* Handle two buttons to turn on relay.
+* Handle DHT sensor to report data.
+* Handle LED night light.
 * Handle activity LED.
 * Mqtt integration.
 * OTA update from a server.
