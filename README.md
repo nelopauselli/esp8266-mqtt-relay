@@ -36,6 +36,7 @@ in progress...| complete | working
 * implement GET Commands by each SET Command (don't show passwords)
 * improve tests schema
 * improve logger schema
+* design a PCB ?
 
 ## Known issues
 * mqtt incoming messages are duplicate after reconnect to wifi 
