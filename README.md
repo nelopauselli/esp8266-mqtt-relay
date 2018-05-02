@@ -22,7 +22,7 @@ firmware to handler relays (and DHT sensor) using mqtt message
 * Mosquitto (http://mosquitto.org/) on a Raspberry Pi
 * cloudmqtt (https://www.cloudmqtt.com)
 
-## Telnet server
+## Telnet console
 [Telnet console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/telnet-screenshot.png  "")
 
 ## TODO
