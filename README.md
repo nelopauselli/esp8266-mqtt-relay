@@ -25,9 +25,9 @@ Firmware to handle relays, buttons and DHT sensor using mqtt message
 ![Telnet console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/telnet-screenshot.png  "")
 
 ## Device sample
-working...|complete
---- | ---
-![Device](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-1.jpg  "") | ![Device](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-2.jpg  "") 
+in progress...| complete | working
+--- | --- | ---
+![Device in progress](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-1.jpg  "") | ![Device complete](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-2.jpg  "") | ![Device working](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-3.jpg  "") 
 
 
 ## TODO
@@ -38,4 +38,4 @@ working...|complete
 * improve logger schema
 
 ## Known issues
-* mqtt incoming messages are duplicate after reconnect to wifi
+* mqtt incoming messages are duplicate after reconnect to wifi 
