@@ -2,9 +2,15 @@
 firmware to handler relays (and DHT sensor) using mqtt message
 
 ## Features
-* If Wifi isn't configure then start as AccessPoint.
+* Handle two relay.
+* Handle two buttons.
+* Handle DHT sensor optional.
+* Handle LED light optional.
+* Handle LED acitivy optional.
+* Mqtt integration optional.
 * OTA update from a server.
 * Telnet access to configure two wifis, mqtt server, ota url and names of pins (relay and button), easy to extend.
+* If Wifi isn't configured or couldn't connect then start as Access Point.
 * DHT sensor support.
 
 ## Board tested
