@@ -5,7 +5,7 @@ firmware to handler relays (and DHT sensor) using mqtt message
 * If Wifi isn't configure then start as AccessPoint.
 * OTA update from a server.
 * Telnet access to configure two wifis, mqtt server, ota url and names of pins (relay and button), easy to extend.
-* DHT sensor suport.
+* DHT sensor support.
 
 ## Board tested
 * NodeMCU
