@@ -6,8 +6,8 @@ Firmware to handle relays, buttons and DHT sensor using mqtt message
 * Handle two buttons.
 * Handle DHT sensor.
 * Handle LED light.
-* Handle LED acitivy.
-* Mqtt integration optional.
+* Handle activity LED.
+* Mqtt integration.
 * OTA update from a server.
 * Telnet access to configure two wifis, mqtt server, ota url and names of pins (relay and button), easy to extend.
 * If Wifi isn't configured or couldn't connect then start as Access Point.
