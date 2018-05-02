@@ -37,6 +37,7 @@ in progress...| complete | working
 * improve tests schema
 * improve logger schema
 * design a PCB ?
+* Make a generic firmware, it should be configured the *pins* instead of *relays*, *buttons* ...
 
 ## Known issues
 * mqtt incoming messages are duplicate after reconnect to wifi 
