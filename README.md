@@ -29,6 +29,8 @@ in progress...| complete | working
 --- | --- | ---
 ![Device in progress](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-1.jpg  "") | ![Device complete](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-2.jpg  "") | ![Device working](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/device-3.jpg  "") 
 
+## Dashboard
+![Dashboard console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/dashboard-1.png  "")
 
 ## TODO
 * remove dependency to NTPClient, replace by a countdown
@@ -37,7 +39,7 @@ in progress...| complete | working
 * improve tests schema
 * improve logger schema
 * design a PCB ?
-* Make a generic firmware, it should be configured the *pins* instead of *relays*, *buttons* ...
+* Make a generic firmware, then user should be configured the *pins* instead of *relays*, *buttons* ...
 
 ## Known issues
 * mqtt incoming messages are duplicate after reconnect to wifi 
