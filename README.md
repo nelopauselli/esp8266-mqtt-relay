@@ -23,7 +23,7 @@ firmware to handler relays (and DHT sensor) using mqtt message
 * cloudmqtt (https://www.cloudmqtt.com)
 
 ## Telnet server
-[Telnet console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/telent-screenshot.png  "")
+[Telnet console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/telnet-screenshot.png  "")
 
 ## TODO
 * remove dependency to NTPClient, replace by a countdown
