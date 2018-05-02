@@ -18,6 +18,13 @@ firmware to handler relays (and DHT sensor) using mqtt message
 * Wemos D1 mini
 * esp8266-esp01
 
+## MQTT Broker tested
+* Mosquitto (http://mosquitto.org/) on a Raspberry Pi
+* cloudmqtt (https://www.cloudmqtt.com)
+
+## Telnet server
+[Telnet console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/telent-screenshot.png  "")
+
 ## TODO
 * remove dependency to NTPClient, replace by a countdown
 * implement hardware monitoring (for example: free memory)
