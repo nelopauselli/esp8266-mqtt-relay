@@ -33,6 +33,7 @@ in progress...| complete | working
 ![Dashboard console](https://github.com/nelopauselli/esp8266-mqtt-relay/raw/master/doc/dashboard-1.png  "")
 
 ## TODO
+* auto reset if start as access point, no connection on telnet and relay isn't turn on
 * remove dependency to NTPClient, replace by a countdown
 * implement hardware monitoring (for example: free memory)
 * implement GET Commands by each SET Command (don't show passwords)
