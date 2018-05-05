@@ -224,7 +224,7 @@ void device_search()
     }
     strcat(definition, "]}");
 
-    mqtt->publish("/devices/found", definition);
+    mqtt->publish("devices/found", definition);
 
     delete topicBase;
 }
