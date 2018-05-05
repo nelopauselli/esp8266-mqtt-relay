@@ -2,6 +2,7 @@
 #define SUBJECT_CLASS
 
 #include "Observer.h"
+#include "Arduino.h"
 
 template <class TEventArgs>
 class Subject

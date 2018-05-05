@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#define HARDWARE_MONITORING
+
 #ifndef RELEASE
 #define TEST_MODE
 #define DEBUG_TO_SERIAL
@@ -21,6 +23,7 @@ extern "C" {
 #ifdef DEBUG_BY_HTTP
 #include "Appenders/HttpAppender.cpp"
 #endif
+
 #include "TraceMemory.cpp"
 #include "NTPClient.h"
 #include "Splitter.h"
@@ -41,6 +44,12 @@ extern "C" {
 #include "Observers/ButtonMqttObserver.cpp"
 #include "Button.cpp"
 #include "Light.cpp"
+
+#ifdef HARDWARE_MONITORING
+#include "HardwareMonitoring.h"
+#include "Observers/HardwareMonitoringMqttObserver.cpp"
+HardwareMonitoring hardwareMonitoring;
+#endif
 
 #ifdef ARDUINO_ESP8266_NODEMCU
 #define RELAY1 D5 //LED_BUILTIN
@@ -319,6 +328,11 @@ bool initMQTT()
         relay2->attach(new RelayMqttObserver(relay2, mqtt));
         mqtt->attach(new MqttRelayObserver(relay2));
         button2->attach(new ButtonMqttObserver(button2, mqtt));
+
+#ifdef HARDWARE_MONITORING
+        hardwareMonitoring.attach(new HardwareMonitoringMqttObserver(mqtt));
+#endif
+
 #ifdef LIGHT_PIN
         light->attach(mqtt);
 #endif
@@ -489,6 +503,8 @@ bool statusBlink = true;
 
 void loop(void)
 {
+    hardwareMonitoring.process();
+    
     traceFreeMemory();
 
     processTelnet();
