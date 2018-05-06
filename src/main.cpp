@@ -13,6 +13,8 @@ extern "C" {
 }
 
 #include "MqttAdapter.h"
+char *mqttUserName = "";
+char *mqttPassword = "";
 
 #ifdef TEST_MODE
 #include "ArduinoUnitTest.h"
@@ -275,32 +277,11 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 bool reconnect()
 {
-    char *connectionString = Settings.readMqttConnectionString();
-
-    Splitter splitter = Splitter(connectionString);
-    char *chunk = splitter.getNextChunk('@');
-
-    Splitter splitter2 = Splitter(chunk);
-    char *mqttUserName = splitter2.getNextChunk(':');
-    char *mqttPassword = splitter2.getNextChunk('\0');
-    if (strlen(mqttUserName) > 0 && strlen(mqttPassword) > 0)
+    Logger.debug("connecting to mqtt with user & pass");
+    if (mqtt->connect(mqttUserName, mqttPassword))
     {
-        Logger.debug("connecting to mqtt with user & pass");
-        if (mqtt->connect(mqttUserName, mqttPassword))
-        {
-            mqtt->setCallback(callback);
-            return true;
-        }
-    }
-    else
-    {
-        Logger.debug("connecting to mqtt anonymous");
-
-        if (mqtt->connect())
-        {
-            mqtt->setCallback(callback);
-            return true;
-        }
+        mqtt->setCallback(callback);
+        return true;
     }
     return false;
 }
@@ -308,10 +289,14 @@ bool reconnect()
 bool initMQTT()
 {
     char *connectionString = Settings.readMqttConnectionString();
-
     Splitter splitter = Splitter(connectionString);
 
-    splitter.skipTo('@');
+    char *chunk = splitter.getNextChunk('@');
+
+    Splitter splitter2 = Splitter(chunk);
+    mqttUserName = splitter2.getNextChunk(':');
+    mqttPassword = splitter2.getNextChunk('\0');
+
     char *mqttServer = splitter.getNextChunk(':');
     uint16_t mqttPort = atoi(splitter.getNextChunk('\0'));
 
@@ -345,7 +330,9 @@ bool initMQTT()
 void publishResetReason()
 {
     String reason = ESP.getResetReason();
-    mqtt->publish("device/reset", reason.c_str());
+    char buffer[50];
+    reason.toCharArray(buffer, 50);
+    mqtt->publish("device/reset", buffer);
 }
 
 void setup()
@@ -407,6 +394,7 @@ void loopMQTT()
     {
         if (!mqtt->connected())
         {
+            mqtt->disconnect();
             if (!reconnect())
             {
                 WifiAdapter.disconnect();
@@ -486,9 +474,17 @@ void processDht()
             float humidityAvg = humidity / (dhtIndex + 1);
             float temperatureAvg = temperature / (dhtIndex + 1);
 
-            String message = "{\"humidity\": " + String(humidityAvg) +
-                             ", \"temperature\": " + String(temperatureAvg) + "}";
-            mqtt->publish("dht", message.c_str());
+            String message;
+            message.reserve(50);
+            message.concat("{\"humidity\": ");
+            message.concat(humidityAvg);
+            message.concat(", \"temperature\": ");
+            message.concat(temperatureAvg);
+            message.concat("}");
+
+            char buffer[50];
+            message.toCharArray(buffer, 50);
+            mqtt->publish("dht", buffer);
 
             humidity = 0;
             temperature = 0;
@@ -504,7 +500,7 @@ bool statusBlink = true;
 void loop(void)
 {
     hardwareMonitoring.process();
-    
+
     traceFreeMemory();
 
     processTelnet();

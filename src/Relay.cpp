@@ -70,11 +70,11 @@ class Relay : public Subject<RelayEventArgs>
 		RelayEventArgs args;
 		if (state)
 		{
-			char *message = new char[24];
+			char message[24];
 			strcpy(message, "state on until ");
 			strcat(message, _offAt->toCharArray());
 			
-			args.state = reinterpret_cast<const char *>(message);
+			args.state = message;
 		}
 		else
 		{
