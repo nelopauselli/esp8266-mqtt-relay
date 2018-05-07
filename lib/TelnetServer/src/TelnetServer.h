@@ -12,14 +12,15 @@
  */
 class TelnetServer
 {
-public:
+  public:
 	TelnetServer(int port);
 
 	void add(Command *command);
 	void start();
 	void process();
+	bool active();
 
-private:
+  private:
 	WiFiServer *server = NULL;
 	CommandListItem *commands = NULL;
 	WiFiClient socket;

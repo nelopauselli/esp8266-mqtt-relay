@@ -45,7 +45,7 @@ void TelnetServer::start()
     server->setNoDelay(true);
 
     _stated = true;
-    
+
     Logger.trace("Telnet is ready!");
 }
 
@@ -86,6 +86,7 @@ void TelnetServer::process()
             socket.write("\r\n");
             socket.write("Type HELP to list commands.\r\n");
             socket.write("$ ");
+            socket.flush();
 
             // Clean input stream
             while (socket.available())
@@ -157,4 +158,9 @@ void TelnetServer::process()
             }
         }
     }
+}
+
+bool TelnetServer::active()
+{
+    return (socket && socket.connected());
 }

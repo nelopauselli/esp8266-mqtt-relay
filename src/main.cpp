@@ -335,6 +335,8 @@ void publishResetReason()
     mqtt->publish("device/reset", buffer);
 }
 
+int blinkDelay;
+
 void setup()
 {
 #ifdef TEST_MODE
@@ -362,6 +364,8 @@ void setup()
         traceMemoryLeak("publish", &publishResetReason);
 
         initClock();
+
+        blinkDelay = 1000;
     }
     else
     {
@@ -369,6 +373,8 @@ void setup()
         int r = random(1000, 9999);
         String ssidAP = String("ESP8266-") + String(r);
         WifiAdapter.startAsAccessPoint(ssidAP.c_str());
+
+        blinkDelay = 250;
     }
 
     telnetServer = new TelnetServer(23);
@@ -499,7 +505,9 @@ bool statusBlink = true;
 
 void loop(void)
 {
+#ifdef HARDWARE_MONITORING
     hardwareMonitoring.process();
+#endif
 
     traceFreeMemory();
 
@@ -524,9 +532,22 @@ void loop(void)
 #endif
         }
     }
+    else
+    {
+        if(millis() > 5*60*1000) //1 minutes
+        {
+            if(!telnetServer->active()){
+                Serial.println("Reseting Access Point");
+                Serial.flush();
+                
+                delay(10);
+                ESP.reset();
+            }
+        }
+    }
 
 #ifdef LED_ACTIVITY
-    if (lastBlink + 1000 < millis())
+    if (lastBlink + blinkDelay < millis())
     {
         statusBlink = !statusBlink;
         digitalWrite(LED_ACTIVITY, statusBlink);
