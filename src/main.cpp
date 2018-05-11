@@ -3,12 +3,21 @@
 #define HARDWARE_MONITORING
 
 #ifndef RELEASE
+#define DEBUG(...) Serial.print(__VA_ARGS__)
+#define DEBUGLN(...) Serial.println(__VA_ARGS__)
+#else
+#define DEBUG(...)
+#define DEBUGLN(...)
+#endif
+
+#ifndef RELEASE
 #define TEST_MODE
 #define DEBUG_TO_SERIAL
 //#define DEBUG_BY_HTTP
 #endif
 
-extern "C" {
+extern "C"
+{
 #include "user_interface.h"
 }
 
@@ -171,9 +180,9 @@ void initHardware()
     Logger.trace("Init buttons...");
 
     button1 = new Button(BUTTON1, Settings.readButtonName(1));
-    button1->attach(new ButtonRelayObserver(relay1));
+    button1->attach("button-1 => relay-1", new ButtonRelayObserver(relay1));
     button2 = new Button(BUTTON2, Settings.readButtonName(2));
-    button2->attach(new ButtonRelayObserver(relay2));
+    button2->attach("button-2 => relay-2", new ButtonRelayObserver(relay2));
 
 #ifdef DHT_PIN
     dht.setup(DHT_PIN);
@@ -307,15 +316,15 @@ bool initMQTT()
         char *deviceName = Settings.readDeviceName();
         mqtt = new MqttAdapter(mqttServer, mqttPort, topic, deviceName);
 
-        relay1->attach(new RelayMqttObserver(relay1, mqtt));
-        mqtt->attach(new MqttRelayObserver(relay1));
-        button1->attach(new ButtonMqttObserver(button1, mqtt));
-        relay2->attach(new RelayMqttObserver(relay2, mqtt));
-        mqtt->attach(new MqttRelayObserver(relay2));
-        button2->attach(new ButtonMqttObserver(button2, mqtt));
+        relay1->attach("relay-1 => mqtt", new RelayMqttObserver(relay1, mqtt));
+        mqtt->attach("mqtt => relay-1", new MqttRelayObserver(relay1));
+        button1->attach("button-1 => mqtt", new ButtonMqttObserver(button1, mqtt));
+        relay2->attach("relay-2 => mqtt", new RelayMqttObserver(relay2, mqtt));
+        mqtt->attach("mqtt => relay-2", new MqttRelayObserver(relay2));
+        button2->attach("button-2 => mqtt", new ButtonMqttObserver(button2, mqtt));
 
 #ifdef HARDWARE_MONITORING
-        hardwareMonitoring.attach(new HardwareMonitoringMqttObserver(mqtt));
+        hardwareMonitoring.attach("hardware-monitoring => mqtt", new HardwareMonitoringMqttObserver(mqtt));
 #endif
 
 #ifdef LIGHT_PIN
@@ -501,6 +510,7 @@ void processDht()
 #endif
 
 long lastBlink;
+long lastDisconnect;
 bool statusBlink = true;
 
 void loop(void)
@@ -534,12 +544,13 @@ void loop(void)
     }
     else
     {
-        if(millis() > 5*60*1000) //1 minutes
+        if (millis() > 5 * 60 * 1000) // 5 minutes
         {
-            if(!telnetServer->active()){
+            if (!telnetServer->active())
+            {
                 Serial.println("Reseting Access Point");
                 Serial.flush();
-                
+
                 delay(10);
                 ESP.reset();
             }

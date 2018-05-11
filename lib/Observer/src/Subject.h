@@ -4,27 +4,77 @@
 #include "Observer.h"
 #include "Arduino.h"
 
+#ifndef RELEASE
+#define DEBUG(...) Serial.print(__VA_ARGS__)
+#define DEBUGLN(...) Serial.println(__VA_ARGS__)
+#else
+#define DEBUG(...)
+#define DEBUGLN(...)
+#endif
+
 template <class TEventArgs>
 class Subject
 {
   public:
-    void attach(Observer<TEventArgs> *observer)
+    void attach(const char *id, Observer<TEventArgs> *observer)
     {
+        deattach(id);
+        
+        observer->id = id;
         observer->next = _observers;
         _observers = observer;
     }
-    void deattach(Observer<TEventArgs> *observer)
+    void deattach(const char *id)
     {
-        //TODO: Method not implemented yet
+        Observer<TEventArgs> *current = _observers;
+        Observer<TEventArgs> *previous = NULL;
+
+        while (current != NULL)
+        {
+            if (strcmp(current->id, id) == 0)
+            {
+                DEBUG("Deattach ");
+                DEBUG(current->id);
+
+                if (previous == NULL) // if it is the first
+                {
+                    DEBUG(" [first]");
+
+                    _observers = current->next;
+                    delete current;
+                    current = _observers;
+                }
+                else
+                {
+                    DEBUG(" [no first]");
+
+                    previous->next = current->next;
+                    delete current;
+                    current = previous->next;
+                }
+                DEBUGLN();
+            }
+            else
+            {
+                previous = current;
+                current = current->next;
+            }
+        }
     }
     void notify(TEventArgs args)
     {
+        DEBUG("notifing: ");
         Observer<TEventArgs> *current = _observers;
         while (current != NULL)
         {
+            DEBUG(" [");
+            DEBUG(current->id);
+            DEBUG("] ");
+
             current->notify(args);
             current = current->next;
         }
+        DEBUGLN();
     }
 
   private:

@@ -56,6 +56,10 @@ bool MqttAdapter::connect(const char *userName, const char *password)
       DEBUG("[ERROR] failed, rc=");
       DEBUG(client.state());
       DEBUGLN(" try again in 5 seconds");
+
+      if (client.state() == -2) //WIFi disconnected
+        return false;
+
       // Wait 5 seconds before retrying
       delay(5000);
       count++;
@@ -110,6 +114,11 @@ void MqttAdapter::publish(const char *subtopic, char *message)
   strcpy(target, _roottopic);
   strcat(target, subtopic);
 
+  DEBUG("Pubish [");
+  DEBUG(target);
+  DEBUG("] => ");
+  DEBUGLN(message);
+  
   client.publish(target, message);
 
   delay(10); //go message, go!
