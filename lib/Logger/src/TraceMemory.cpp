@@ -9,7 +9,8 @@ extern "C" {
 
 void debugMemory()
 {
-    Logger.debug("[MEMORY]," + String(system_get_free_heap_size()));
+    DEBUG("[MEMORY] ");
+    DEBUGLN(system_get_free_heap_size());
 }
 
 void traceMemoryLeak(const char *name, void (*callback)())
@@ -22,7 +23,11 @@ void traceMemoryLeak(const char *name, void (*callback)())
 
     if (freeMemoryAtEnd < freeMemoryAtStart)
     {
-        Logger.error("Lost memory in " + String(name) + ": " + String(freeMemoryAtStart - freeMemoryAtEnd) + " bytes.");
+        DEBUG("[ERROR] Lost memory in ");
+        DEBUG(name);
+        DEBUG(": ");
+        DEBUG(freeMemoryAtStart - freeMemoryAtEnd);
+        DEBUGLN(" bytes.");
     }
 }
 
@@ -34,7 +39,10 @@ void traceFreeMemory()
     freeMemory = system_get_free_heap_size();
     if (lastFreeMemory != freeMemory)
     {
-        Logger.debug("Free Memory: " + String(freeMemory) + " bytes");
+        DEBUG("Free Memory: ");
+        DEBUG(freeMemory);
+        DEBUGLN(" bytes");
+        
         lastFreeMemory = freeMemory;
     }
 

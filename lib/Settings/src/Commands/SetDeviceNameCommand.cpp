@@ -14,10 +14,10 @@ class SetDeviceNameCommand : public Command
         const char *key = "SET DEVICE NAME ";
         if (memcmp(line, key, strlen(key)) == 0)
         {
-            Logger.trace("Configurando device name");
+            DEBUG("Configurando device name ");
 
             char *value = line + strlen(key);
-            Logger.debug(value);
+            DEBUGLN(value);
 
             Settings.writeDeviceName(value);
             socket->write("OK\r\n");

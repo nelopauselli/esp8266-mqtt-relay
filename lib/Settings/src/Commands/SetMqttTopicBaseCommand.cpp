@@ -14,10 +14,10 @@ class SetMqttTopicBaseCommand : public Command
         const char *key = "SET TOPIC BASE ";
         if (memcmp(line, key, strlen(key)) == 0)
         {
-            Logger.trace("Configurando topic base");
+            DEBUG("Configurando topic base ");
 
             char *value = line + strlen(key);
-            Logger.debug(value);
+            DEBUGLN(value);
 
             Settings.writeMqttTopicBase(value);
             socket->write("OK\r\n");

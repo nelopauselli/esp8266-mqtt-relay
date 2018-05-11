@@ -38,14 +38,18 @@ class Light
 
 	void on()
 	{
-		Logger.trace("ON");
+		DEBUG(_name);
+		DEBUGLN(" ON");
+
 		digitalWrite(_pin, LOW);
 		publishState();
 	}
 
 	void off()
 	{
-		Logger.trace("OFF");
+		DEBUG(_name);
+		DEBUG(" OFF");
+
 		digitalWrite(_pin, HIGH);
 		publishState();
 	}
@@ -68,7 +72,9 @@ class Light
 
 	bool process()
 	{
-		Logger.debug("Processing " + String(_name));
+		DEBUG("Processing ");
+		DEBUGLN(_name);
+
 		return false;
 	}
 

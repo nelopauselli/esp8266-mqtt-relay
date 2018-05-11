@@ -27,7 +27,8 @@ void WifiAdapter_t::addAP(char *connectionString)
 
 bool WifiAdapter_t::connect()
 {
-	Logger.debug(String(_wifiMulti.count()) + " WiFi configured. connecting...");
+	DEBUG(_wifiMulti.count());
+	DEBUGLN(" WiFi configured. connecting...");
 
 	WiFi.mode(WIFI_STA);
 	int i = 0;
@@ -35,13 +36,15 @@ bool WifiAdapter_t::connect()
 	do
 	{
 		status = _wifiMulti.run();
-		Logger.debug("Status: " + String(status));
+		DEBUG("Status: ");
+		DEBUGLN(status);
 
 		if (status != WL_CONNECTED)
 		{
 			if (i == 20)
 			{
-				Logger.error("Connection fail. Status: " + String(status));
+				DEBUG("[ERROR] Connection fail. Status: ");
+				DEBUGLN(status);
 				return false;
 			}
 
@@ -50,13 +53,15 @@ bool WifiAdapter_t::connect()
 		}
 	} while (status != WL_CONNECTED);
 
-	Logger.trace("Connection established with " + WiFi.SSID());
-	Logger.debug("RSSI: " + String(getRSSI(WiFi.SSID().c_str())));
+	DEBUG("Connection established with ");
+	DEBUGLN(WiFi.SSID());
+	DEBUG("RSSI: ");
+	DEBUGLN(getRSSI(WiFi.SSID().c_str()));
 
 	_accessPoint = false;
 
-	Logger.trace("IP address:");
-	Logger.trace(getIP().toString());
+	DEBUG("IP address: ");
+	DEBUGLN(getIP());
 
 	return true;
 }
@@ -66,7 +71,7 @@ void WifiAdapter_t::disconnect()
 	WiFi.disconnect(true);
 
 	int count = 0;
-	Logger.trace("disconnecting");
+	DEBUGLN("disconnecting");
 	while (WiFi.status() != WL_DISCONNECTED)
 	{
 		count++;
@@ -76,20 +81,24 @@ void WifiAdapter_t::disconnect()
 	}
 
 	if (WiFi.status() == WL_DISCONNECTED)
-		Logger.trace("disconnected");
+		DEBUGLN("disconnected");
 	else
-		Logger.error("could not disconnect");
+		DEBUGLN("[ERROR] could not disconnect");
 }
 
 void WifiAdapter_t::startAsAccessPoint(const char *ssid)
 {
 	WiFi.mode(WIFI_AP);
 	WiFi.softAP(ssid);
-	Logger.trace("Access Point \"" + String(ssid) + "\" started");
+
+	DEBUG("Access Point \"");
+	DEBUG(ssid);
+	DEBUGLN("\" started");
 
 	_accessPoint = true;
 
-	Logger.trace("IP address:\t" + String(getIP()));
+	DEBUG("IP address: ");
+	DEBUGLN(getIP());
 }
 
 // Return RSSI or 0 if target SSID not found

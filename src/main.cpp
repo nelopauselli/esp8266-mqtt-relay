@@ -3,23 +3,15 @@
 #define HARDWARE_MONITORING
 
 #ifndef RELEASE
-#define DEBUG(...) Serial.print(__VA_ARGS__)
-#define DEBUGLN(...) Serial.println(__VA_ARGS__)
-#else
-#define DEBUG(...)
-#define DEBUGLN(...)
-#endif
-
-#ifndef RELEASE
 #define TEST_MODE
-#define DEBUG_TO_SERIAL
-//#define DEBUG_BY_HTTP
 #endif
 
 extern "C"
 {
 #include "user_interface.h"
 }
+
+#include "Logger.h"
 
 #include "MqttAdapter.h"
 char *mqttUserName = "";
@@ -30,10 +22,6 @@ char *mqttPassword = "";
 #endif
 
 #include "Logger.h"
-#include "Appenders/SerialAppender.cpp"
-#ifdef DEBUG_BY_HTTP
-#include "Appenders/HttpAppender.cpp"
-#endif
 
 #include "TraceMemory.cpp"
 #include "NTPClient.h"
@@ -138,14 +126,14 @@ void test4()
 void tests()
 {
     Serial.begin(115200);
-    Logger.trace("Start unit tests");
+    DEBUGLN("Start unit tests");
 
     test1();
     test2();
     test3();
     test4();
 
-    Logger.trace("End unit tests");
+    DEBUGLN("End unit tests");
 
     Assert.summary();
 
@@ -154,17 +142,6 @@ void tests()
 
 #endif
 
-void initLogger()
-{
-    Logger.cleanDebug();
-    Logger.cleanLog();
-    Logger.debugging(false);
-
-#ifdef DEBUG_TO_SERIAL
-    Logger.add(new SerialAppender());
-#endif
-}
-
 void initHardware()
 {
 #ifdef LED_ACTIVITY
@@ -172,12 +149,12 @@ void initHardware()
     digitalWrite(LED_ACTIVITY, HIGH);
 #endif
 
-    Logger.trace("Init relays...");
+    DEBUGLN("Init relays...");
 
     relay1 = new Relay(RELAY1, Settings.readRelayName(1), TimeSpan{1, 0, 0});
     relay2 = new Relay(RELAY2, Settings.readRelayName(2), TimeSpan{1, 0, 0});
 
-    Logger.trace("Init buttons...");
+    DEBUGLN("Init buttons...");
 
     button1 = new Button(BUTTON1, Settings.readButtonName(1));
     button1->attach("button-1 => relay-1", new ButtonRelayObserver(relay1));
@@ -197,7 +174,7 @@ void initClock()
 {
     NTPClient ntpClient;
     if (!ntpClient.initClockFromServer())
-        Logger.error("NTP Client init fail. :(");
+        DEBUGLN("[ERROR] NTP Client init fail. :(");
 }
 
 /**
@@ -242,12 +219,14 @@ void device_search()
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-    Logger.debug("Message arrived [" + String(topic) + "] ");
+    DEBUG("Message arrived [");
+    DEBUG(topic);
+    DEBUG("] <= ");
 
     char *message = new char[length + 1];
     memcpy(message, payload, length);
     message[length] = '\0';
-    Logger.debug(message);
+    DEBUGLN(message);
 
     char *subtopic = new char[strlen(topic) - strlen(mqtt->roottopic()) + 1];
     strcpy(subtopic, topic + strlen(mqtt->roottopic()));
@@ -286,7 +265,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 bool reconnect()
 {
-    Logger.debug("connecting to mqtt with user & pass");
+    DEBUGLN("connecting to mqtt with user & pass");
     if (mqtt->connect(mqttUserName, mqttPassword))
     {
         mqtt->setCallback(callback);
@@ -311,7 +290,11 @@ bool initMQTT()
 
     if (strlen(mqttServer) > 0 && mqttPort)
     {
-        Logger.debug(String("Connecting to broker in ") + mqttServer + ":" + String(mqttPort));
+        DEBUG("Connecting to broker in ");
+        DEBUG(mqttServer);
+        DEBUG(":");
+        DEBUGLN(mqttPort);
+
         char *topic = Settings.readMqttTopicBase();
         char *deviceName = Settings.readDeviceName();
         mqtt = new MqttAdapter(mqttServer, mqttPort, topic, deviceName);
@@ -354,20 +337,16 @@ void setup()
 
     traceFreeMemory();
 
-    initLogger();
     initHardware();
 
-    Logger.debug("Getting ChipID");
-    Logger.trace("ChipID: " + String(ESP.getChipId()));
+    DEBUG("ChipID: ");
+    DEBUGLN(ESP.getChipId());
 
     WifiAdapter.addAP(Settings.readWifi(1));
     WifiAdapter.addAP(Settings.readWifi(2));
 
     if (WifiAdapter.connect())
     {
-#ifdef DEBUG_BY_HTTP
-        Logger.add(new HttpAppender(24));
-#endif
         initMQTT();
 
         traceMemoryLeak("publish", &publishResetReason);
@@ -396,7 +375,7 @@ void setup()
     telnetServer->add(new UpdateFromOTACommand());
     telnetServer->start();
 
-    Logger.trace("ready");
+    DEBUGLN("ready");
 
 #ifdef LED_ACTIVITY
     digitalWrite(LED_ACTIVITY, LOW);
@@ -435,7 +414,7 @@ void processRelays()
     relay1->process();
     relay2->process();
 
-    Logger.debug("Check completed.");
+    DEBUGLN("Check completed.");
 }
 
 #ifdef LIGHT_PIN
@@ -470,13 +449,17 @@ void processDht()
         // Check if any reads failed and exit early (to try again).
         if (isnan(h) || isnan(t))
         {
-            Logger.error("Failed to read from DHT sensor!");
+            DEBUGLN("[ERROR] Failed to read from DHT sensor!");
             return;
         }
 
         humidity += h;
         temperature += t;
-        Logger.debug("Humidity: " + String(h) + "%\t" + "Temperature: " + String(t) + " *C ");
+        DEBUG("Humidity: ");
+        DEBUG(h);
+        DEBUG("%\tTemperature: ");
+        DEBUG(t);
+        DEBUGLN(" *C ");
 
         if (dhtIndex < DHT_MAX)
         {
@@ -484,7 +467,7 @@ void processDht()
         }
         else
         {
-            Logger.debug("publish dht");
+            DEBUGLN("publish dht");
 
             float humidityAvg = humidity / (dhtIndex + 1);
             float temperatureAvg = temperature / (dhtIndex + 1);

@@ -41,7 +41,9 @@ class Relay : public Subject<RelayEventArgs>
 
 	void on()
 	{
-		Logger.trace("ON");
+		DEBUG(_name);
+		DEBUGLN(" ON");
+
 		if (_offAt != NULL)
 			delete _offAt;
 
@@ -54,7 +56,9 @@ class Relay : public Subject<RelayEventArgs>
 
 	void off()
 	{
-		Logger.trace("OFF");
+		DEBUG(_name);
+		DEBUGLN(" OFF");
+
 		if (_offAt != NULL)
 			delete _offAt;
 		_offAt = NULL;
@@ -87,7 +91,8 @@ class Relay : public Subject<RelayEventArgs>
 	{
 		bool ret = false;
 
-		Logger.debug("Processing " + String(_name));
+		DEBUG("Processing ");
+		DEBUGLN(_name);
 
 		if (_offAt != NULL)
 		{
@@ -97,7 +102,12 @@ class Relay : public Subject<RelayEventArgs>
 			_offAt->toCharArray(buffer1);
 			char buffer2[9];
 			now->toCharArray(buffer2);
-			Logger.debug(String(_name) + " turn off at " + buffer1 + ". Now is " + buffer2);
+			
+			DEBUG(_name);
+			DEBUG(" turn off at ");
+			DEBUG(buffer1);
+			DEBUG(". Now is ");
+			DEBUGLN(buffer2);
 
 			if (_offAt->isLessThan(now))
 			{

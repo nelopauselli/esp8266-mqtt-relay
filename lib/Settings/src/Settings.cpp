@@ -120,12 +120,20 @@ void SettingsClass::write(int from, int to, char *value)
 {
 	if (strlen(value) > to - from)
 	{
-		Logger.error(String("Length of '") + value + "' is bigger that " + String(to - from));
+		DEBUG("[ERROR] Length of '");
+		DEBUG(value);
+		DEBUG("' is bigger that ");
+		DEBUGLN(to - from);
+
 		return;
 	}
 
 	int i = 0;
-	Logger.debug("Writing from " + String(from) + ": " + value);
+	DEBUG("Writing from ");
+	DEBUG(from);
+	DEBUG(": ");
+	DEBUGLN(value);
+
 	for (i = 0; i < strlen(value); ++i)
 	{
 		EEPROM.write(from + i, value[i]);
@@ -139,7 +147,12 @@ void SettingsClass::write(int from, int to, char *value)
 
 char *SettingsClass::read(int from, int to)
 {
-	Logger.debug("Reading from " + String(from) + " to " + String(to) + ".");
+	DEBUG("Reading from ");
+	DEBUG(from);
+	DEBUG(" to ");
+	DEBUG(to);
+	DEBUGLN(".");
+
 	char *buffer = new char[to - from];
 
 	int i;
@@ -155,7 +168,9 @@ char *SettingsClass::read(int from, int to)
 	if (i == to - 1)
 		buffer[i - from] = '\0';
 
-	Logger.debug("Value readed: " + String(buffer));
+	DEBUG("Value readed: ");
+	DEBUGLN(buffer);
+	
 	return buffer;
 }
 

@@ -13,11 +13,11 @@ class SetMqttCommand : public Command
         const char *key = "SET MQTT ";
         if (memcmp(line, key, strlen(key)) == 0)
         {
-            Logger.trace("Configurando Mqtt");
+            DEBUG("Configurando Mqtt ");
 
             char *value = new char[strlen(line) - strlen(key) + 1];
             strcpy(value, line + strlen(key));
-            Logger.debug(value);
+            DEBUGLN(value);
 
             Settings.writeMqttConnectionString(value);
             socket->write("OK\r\n");

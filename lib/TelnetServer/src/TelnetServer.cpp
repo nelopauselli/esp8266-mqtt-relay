@@ -46,14 +46,14 @@ void TelnetServer::start()
 
     _stated = true;
 
-    Logger.trace("Telnet is ready!");
+    DEBUGLN("Telnet is ready!");
 }
 
 void TelnetServer::process()
 {
     if (!_stated)
     {
-        Logger.error("Telnet should be started before process!");
+        DEBUGLN("[ERROR] Telnet should be started before process!");
         return;
     }
 
@@ -133,7 +133,7 @@ void TelnetServer::process()
 
             // ending command with a '\0'
             buffer[bufferIndex] = '\0';
-            Logger.debug(buffer);
+            DEBUGLN(buffer);
 
             if (strlen(buffer) > 0) // skip blank command
             {

@@ -13,21 +13,23 @@ bool NTPClient::initClockFromServer()
 	const int NTP_PACKET_SIZE = 48;  // NTP time stamp is in the first 48 bytes of the message
 	char NTPBuffer[NTP_PACKET_SIZE]; // buffer to hold incoming and outgoing packets
 
-	Logger.debug("Starting UDP");
+	DEBUGLN("Starting UDP");
 
 	WiFiUDP UDP;
 	UDP.begin(123); // Start listening for UDP messages on port 123
-	Logger.debug("Local port:\t" + String(UDP.localPort()));
+	DEBUG("Local port:\t");
+	DEBUGLN(UDP.localPort());
 
 	IPAddress timeServerIP; // time.nist.gov NTP server address
 	if (!WiFi.hostByName(NTPServerName, timeServerIP))
 	{
-		Logger.error("DNS lookup failed. Rebooting.");
+		DEBUGLN("[ERROR] DNS lookup failed. Rebooting.");
 		return false;
 	}
-	Logger.debug("Time server IP:\t" + String(timeServerIP));
+	DEBUG("Time server IP: ");
+	DEBUGLN(timeServerIP);
 
-	Logger.debug("Sending NTP request.");
+	DEBUGLN("Sending NTP request.");
 
 	// Send an NTP request
 	memset(NTPBuffer, 0, NTP_PACKET_SIZE); // set all bytes in the buffer to 0
@@ -45,7 +47,7 @@ bool NTPClient::initClockFromServer()
 		count++;
 		if (count > 50)
 		{
-			Logger.error("Timeout!");
+			DEBUGLN("[ERROR] Timeout!");
 			return false;
 		}
 	}
@@ -58,7 +60,8 @@ bool NTPClient::initClockFromServer()
 	const uint32_t seventyYears = 2208988800UL;
 	// subtract seventy years:
 	uint32_t UNIXTime = NTPTime - seventyYears;
-	Logger.debug("Time as UNIX format is: " + String(UNIXTime));
+	DEBUG("Time as UNIX format is: ");
+	DEBUGLN(UNIXTime);
 
 	SoftTimeClock.reset(UNIXTime);
 

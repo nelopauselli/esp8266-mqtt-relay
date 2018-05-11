@@ -14,13 +14,12 @@ class SetRelayNameCommand : public Command
         const char *key = "SET RELAY NAME ";
         if (memcmp(line, key, strlen(key)) == 0)
         {
-            Logger.trace("Configurando nombre del relay");
+            DEBUGLN("Configurando nombre del relay");
 
             char *value = new char[strlen(line) - strlen(key) + 1];
             Splitter splitter = Splitter(line + strlen(key));
 
             char *index = splitter.getNextChunk(' ');
-            Logger.debug(index);
             char *connectionString = splitter.getNextChunk('\0');
 
             if (strcmp(index, "1") == 0)
