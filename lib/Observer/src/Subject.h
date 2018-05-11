@@ -61,14 +61,12 @@ class Subject
         Observer<TEventArgs> *current = _observers;
         while (current != NULL)
         {
-            DEBUG(" [");
-            DEBUG(current->id);
-            DEBUG("] ");
+            DEBUG("\t");
+            DEBUGLN(current->id);
 
             current->notify(args);
             current = current->next;
         }
-        DEBUGLN();
     }
 
   private:
