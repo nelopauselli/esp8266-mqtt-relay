@@ -506,24 +506,23 @@ void loop(void)
 
     processTelnet();
 
+    traceMemoryLeak("processButtons", &processButtons);
+    if (lastProcess + 5000 < millis())
+    {
+        traceMemoryLeak("processRelays", &processRelays);
+#ifdef LIGHT_PIN
+        traceMemoryLeak("processLights", &processLights);
+        lastProcess = millis();
+#endif
+    }
+    
+#ifdef DHT_PIN
+    processDht();
+#endif
+
     if (!WifiAdapter.isAccessPoint())
     {
         loopMQTT();
-
-        traceMemoryLeak("processButtons", &processButtons);
-
-#ifdef DHT_PIN
-        processDht();
-#endif
-
-        if (lastProcess + 5000 < millis())
-        {
-            traceMemoryLeak("processRelays", &processRelays);
-#ifdef LIGHT_PIN
-            traceMemoryLeak("processLights", &processLights);
-            lastProcess = millis();
-#endif
-        }
     }
     else
     {

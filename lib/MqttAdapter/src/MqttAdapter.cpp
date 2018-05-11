@@ -104,20 +104,23 @@ void MqttAdapter::subscribe(const char *topic)
 
 void MqttAdapter::publish(const char *subtopic, char *message)
 {
-  char *target = new char[strlen(_roottopic) + strlen(subtopic) + 1];
-  strcpy(target, _roottopic);
-  strcat(target, subtopic);
+  if (client.connected())
+  {
+    char *target = new char[strlen(_roottopic) + strlen(subtopic) + 1];
+    strcpy(target, _roottopic);
+    strcat(target, subtopic);
 
-  DEBUG("Pubish [");
-  DEBUG(target);
-  DEBUG("] => ");
-  DEBUGLN(message);
-  
-  client.publish(target, message);
+    DEBUG("Pubish [");
+    DEBUG(target);
+    DEBUG("] => ");
+    DEBUGLN(message);
 
-  delay(10); //go message, go!
+    client.publish(target, message);
 
-  delete target;
+    delay(10); //go message, go!
+
+    delete target;
+  }
 }
 
 const char *MqttAdapter::roottopic()
