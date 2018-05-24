@@ -342,7 +342,6 @@ void loopMQTT()
     }
 }
 
-long lastProcess = 0;
 void processButtons()
 {
     button1->process();
@@ -387,7 +386,6 @@ void loop(void)
     traceMemoryLeak("processRelays", &processRelays);
 #ifdef LIGHT_PIN
     traceMemoryLeak("processLights", &processLights);
-    lastProcess = millis();
 #endif
 
 #ifdef DHT_PIN

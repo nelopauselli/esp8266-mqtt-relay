@@ -107,7 +107,7 @@ class Relay : public Subject<RelayEventArgs>
 				ltoa(minutesLeft, buffer, 10);
 
 				char message[24];
-				strcpy(message, "state on for ");
+				strcpy(message, "turned on for ");
 				strcat(message, buffer);
 				strcat(message, " minutes");
 
