@@ -70,12 +70,8 @@ class Light
 		}
 	}
 
-	bool process()
+	void loop()
 	{
-		DEBUG("Processing ");
-		DEBUGLN(_name);
-
-		return false;
 	}
 
 	void invoke(char *payload)

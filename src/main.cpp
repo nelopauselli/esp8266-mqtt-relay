@@ -2,6 +2,14 @@
 
 #define HARDWARE_MONITORING
 
+#ifdef RELEASE
+#define RELAY_DURATION 60
+#define RELAY_NOTIFICATION_INTERVAL 300
+#else
+#define RELAY_DURATION 3
+#define RELAY_NOTIFICATION_INTERVAL 10
+#endif
+
 extern "C"
 {
 #include "user_interface.h"
@@ -94,8 +102,8 @@ void initHardware()
 
     DEBUGLN("Init relays...");
 
-    relay1 = new Relay(RELAY1, Settings.readRelayName(1), 60);
-    relay2 = new Relay(RELAY2, Settings.readRelayName(2), 60);
+    relay1 = new Relay(RELAY1, Settings.readRelayName(1), RELAY_DURATION, RELAY_NOTIFICATION_INTERVAL);
+    relay2 = new Relay(RELAY2, Settings.readRelayName(2), RELAY_DURATION, RELAY_NOTIFICATION_INTERVAL);
 
     DEBUGLN("Init buttons...");
 
@@ -343,16 +351,14 @@ void processButtons()
 
 void processRelays()
 {
-    relay1->process();
-    relay2->process();
-
-    DEBUGLN("Check completed.");
+    relay1->loop();
+    relay2->loop();
 }
 
 #ifdef LIGHT_PIN
 void processLights()
 {
-    light->process();
+    light->loop();
 }
 #endif
 
@@ -377,14 +383,12 @@ void loop(void)
     processTelnet();
 
     traceMemoryLeak("processButtons", &processButtons);
-    if (lastProcess + 5000 < millis())
-    {
-        traceMemoryLeak("processRelays", &processRelays);
+
+    traceMemoryLeak("processRelays", &processRelays);
 #ifdef LIGHT_PIN
-        traceMemoryLeak("processLights", &processLights);
-        lastProcess = millis();
+    traceMemoryLeak("processLights", &processLights);
+    lastProcess = millis();
 #endif
-    }
 
 #ifdef DHT_PIN
     dhtReader.loop();
