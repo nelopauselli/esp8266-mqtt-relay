@@ -2,10 +2,6 @@
 
 #define HARDWARE_MONITORING
 
-#ifndef RELEASE
-#define TEST_MODE
-#endif
-
 extern "C"
 {
 #include "user_interface.h"
@@ -17,14 +13,9 @@ extern "C"
 char *mqttUserName = "";
 char *mqttPassword = "";
 
-#ifdef TEST_MODE
-#include "ArduinoUnitTest.h"
-#endif
-
 #include "Logger.h"
 
 #include "TraceMemory.cpp"
-#include "NTPClient.h"
 #include "Splitter.h"
 #include "WifiAdapter.h"
 #include "TelnetServer.h"
@@ -74,7 +65,8 @@ HardwareMonitoring hardwareMonitoring;
 #endif
 
 #ifdef DHT_PIN
-#include <DhtReader.h>
+#include "DhtReader.h"
+#include "Observers/DhtMqttObserver.cpp"
 #ifdef DHT_TYPE_11
 DhtReader dhtReader(DHT_PIN, DHT_11);
 #else
@@ -93,59 +85,6 @@ Light *light;
 TelnetServer *telnetServer = NULL;
 MqttAdapter *mqtt = NULL;
 
-#ifdef TEST_MODE
-
-void test1()
-{
-    Time time(1524362301); //22 de April de 2018 1:58:21
-
-    char *buffer = time.toCharArray();
-    Assert.areEqual("01:58:21", buffer);
-}
-
-void test2()
-{
-    Time time(1524434780); //22 de April de 2018 22:06:20
-
-    char *buffer = time.toCharArray();
-    Assert.areEqual("22:06:20", buffer);
-}
-
-void test3()
-{
-    Time time(1524389400); //22 de April de 2018 9:30:00
-
-    char *buffer = time.toCharArray();
-    Assert.areEqual("09:30:00", buffer);
-}
-
-void test4()
-{
-    Time time(1524393000); //22 de April de 2018 10:30:00
-
-    char *buffer = time.toCharArray();
-    Assert.areEqual("10:30:00", buffer);
-}
-
-void tests()
-{
-    Serial.begin(115200);
-    DEBUGLN("Start unit tests");
-
-    test1();
-    test2();
-    test3();
-    test4();
-
-    DEBUGLN("End unit tests");
-
-    Assert.summary();
-
-    delay(1000);
-}
-
-#endif
-
 void initHardware()
 {
 #ifdef LED_ACTIVITY
@@ -155,8 +94,8 @@ void initHardware()
 
     DEBUGLN("Init relays...");
 
-    relay1 = new Relay(RELAY1, Settings.readRelayName(1), TimeSpan{1, 0, 0});
-    relay2 = new Relay(RELAY2, Settings.readRelayName(2), TimeSpan{1, 0, 0});
+    relay1 = new Relay(RELAY1, Settings.readRelayName(1), 60);
+    relay2 = new Relay(RELAY2, Settings.readRelayName(2), 60);
 
     DEBUGLN("Init buttons...");
 
@@ -168,13 +107,6 @@ void initHardware()
 #ifdef LIGHT_PIN
     light = new Light(LIGHT_PIN, "luz");
 #endif
-}
-
-void initClock()
-{
-    NTPClient ntpClient;
-    if (!ntpClient.initClockFromServer())
-        DEBUGLN("[ERROR] NTP Client init fail. :(");
 }
 
 /**
@@ -309,7 +241,9 @@ bool initMQTT()
 #ifdef HARDWARE_MONITORING
         hardwareMonitoring.attach("hardware-monitoring => mqtt", new HardwareMonitoringMqttObserver(mqtt));
 #endif
-
+#ifdef DHT_PIN
+        dhtReader.attach("dht => mqtt", new DhtMqttObserver(mqtt));
+#endif
 #ifdef LIGHT_PIN
         light->attach(mqtt);
 #endif
@@ -331,8 +265,8 @@ int blinkDelay;
 
 void setup()
 {
-#ifdef TEST_MODE
-    tests();
+#ifndef RELEASE
+    Serial.begin(115200);
 #endif
 
     traceFreeMemory();
@@ -350,8 +284,6 @@ void setup()
         initMQTT();
 
         traceMemoryLeak("publish", &publishResetReason);
-
-        initClock();
 
         blinkDelay = 1000;
     }
@@ -453,7 +385,7 @@ void loop(void)
         lastProcess = millis();
 #endif
     }
-    
+
 #ifdef DHT_PIN
     dhtReader.loop();
 #endif

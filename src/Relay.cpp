@@ -4,17 +4,19 @@
 #include <Arduino.h>
 #include "Logger.h"
 #include "Subject.h"
-#include "SoftClockTime.h"
 #include "RelayEventArgs.h"
+
+#define MINUTE 60 * 1000
 
 class Relay : public Subject<RelayEventArgs>
 {
   public:
-	Relay(uint8_t pin, const char *name, TimeSpan duration)
+	Relay(uint8_t pin, const char *name, unsigned long durationInMinutes)
 	{
 		_pin = pin;
 		_name = name;
-		_duration = duration;
+		_startAt = 0L;
+		_duration = durationInMinutes * MINUTE;
 
 		pinMode(_pin, OUTPUT);
 		digitalWrite(_pin, HIGH);
@@ -23,6 +25,18 @@ class Relay : public Subject<RelayEventArgs>
 	const char *name()
 	{
 		return _name;
+	}
+
+	unsigned long getTimeLeft()
+	{
+		if (_startAt == 0L)
+			return 0;
+
+		unsigned long endAt = _startAt + _duration + _extra;
+		if (endAt < millis())
+			return 0;
+
+		return endAt - millis();
 	}
 
 	void toggle()
@@ -44,11 +58,8 @@ class Relay : public Subject<RelayEventArgs>
 		DEBUG(_name);
 		DEBUGLN(" ON");
 
-		if (_offAt != NULL)
-			delete _offAt;
+		_startAt = millis();
 
-		_offAt = SoftTimeClock.now();
-		_offAt->add(_duration);
 		digitalWrite(_pin, LOW);
 
 		publishState();
@@ -59,9 +70,8 @@ class Relay : public Subject<RelayEventArgs>
 		DEBUG(_name);
 		DEBUGLN(" OFF");
 
-		if (_offAt != NULL)
-			delete _offAt;
-		_offAt = NULL;
+		_startAt = 0L;
+
 		digitalWrite(_pin, HIGH);
 
 		publishState();
@@ -74,10 +84,16 @@ class Relay : public Subject<RelayEventArgs>
 		RelayEventArgs args;
 		if (state)
 		{
+			unsigned long minutesLeft = getTimeLeft() / 60 / 1000;
+
+			char buffer[10];
+			ltoa(minutesLeft, buffer, 10);
+
 			char message[24];
-			strcpy(message, "state on until ");
-			strcat(message, _offAt->toCharArray());
-			
+			strcpy(message, "state on for ");
+			strcat(message, buffer);
+			strcat(message, "minutes");
+
 			args.state = message;
 		}
 		else
@@ -89,34 +105,24 @@ class Relay : public Subject<RelayEventArgs>
 
 	bool process()
 	{
-		bool ret = false;
-
 		DEBUG("Processing ");
 		DEBUGLN(_name);
 
-		if (_offAt != NULL)
+		if (_startAt != 0L)
 		{
-			Time *now = SoftTimeClock.now();
+			unsigned long timeLeft = getTimeLeft();
 
-			char buffer1[9];
-			_offAt->toCharArray(buffer1);
-			char buffer2[9];
-			now->toCharArray(buffer2);
-			
 			DEBUG(_name);
-			DEBUG(" turn off at ");
-			DEBUG(buffer1);
-			DEBUG(". Now is ");
-			DEBUGLN(buffer2);
+			DEBUG(" turn off in ");
+			DEBUGLN(timeLeft);
 
-			if (_offAt->isLessThan(now))
+			if (timeLeft == 0)
 			{
 				off();
-				ret = true;
+				return true;
 			}
-			delete now;
 		}
-		return ret;
+		return false;
 	}
 
 	void invoke(char *payload)
@@ -129,14 +135,16 @@ class Relay : public Subject<RelayEventArgs>
 			publishState();
 		else if (strcmp(payload, "+30m") == 0)
 		{
-			if (_offAt != NULL)
-				_offAt->add(TimeSpan{0, 30, 0});
+			if (_startAt != 0)
+				_extra += 30 * MINUTE;
+
 			publishState();
 		}
 		else if (strcmp(payload, "+1h") == 0)
 		{
-			if (_offAt != NULL)
-				_offAt->add(TimeSpan{1, 0, 0});
+			if (_startAt != 0)
+				_extra += 60 * MINUTE;
+
 			publishState();
 		}
 	}
@@ -144,8 +152,9 @@ class Relay : public Subject<RelayEventArgs>
   private:
 	const char *_name;
 	uint8_t _pin;
-	Time *_offAt = NULL;
-	TimeSpan _duration;
+	unsigned long _startAt;
+	unsigned long _duration;
+	unsigned long _extra;
 };
 
 #endif
