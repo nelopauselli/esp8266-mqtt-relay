@@ -74,8 +74,12 @@ HardwareMonitoring hardwareMonitoring;
 #endif
 
 #ifdef DHT_PIN
-#include <DHT.h>
-DHT dht;
+#include <DhtReader.h>
+#ifdef DHT_TYPE_11
+DhtReader dhtReader(DHT_PIN, DHT_11);
+#else
+DhtReader dhtReader(DHT_PIN, DHT_22);
+#endif
 #endif
 
 Relay *relay1;
@@ -160,10 +164,6 @@ void initHardware()
     button1->attach("button-1 => relay-1", new ButtonRelayObserver(relay1));
     button2 = new Button(BUTTON2, Settings.readButtonName(2));
     button2->attach("button-2 => relay-2", new ButtonRelayObserver(relay2));
-
-#ifdef DHT_PIN
-    dht.setup(DHT_PIN);
-#endif
 
 #ifdef LIGHT_PIN
     light = new Light(LIGHT_PIN, "luz");
@@ -430,68 +430,6 @@ void processTelnet()
         telnetServer->process();
 }
 
-#ifdef DHT_PIN
-#define DHT_MAX 5
-float humidity;
-float temperature;
-int dhtIndex = 0;
-
-int timeSinceLastRead = 0;
-void processDht()
-{
-    // Report every 2 seconds.
-    if (millis() > timeSinceLastRead + dht.getMinimumSamplingPeriod())
-    {
-        float h = dht.getHumidity();
-        float t = dht.getTemperature();
-        timeSinceLastRead = millis();
-
-        // Check if any reads failed and exit early (to try again).
-        if (isnan(h) || isnan(t))
-        {
-            DEBUGLN("[ERROR] Failed to read from DHT sensor!");
-            return;
-        }
-
-        humidity += h;
-        temperature += t;
-        DEBUG("Humidity: ");
-        DEBUG(h);
-        DEBUG("%\tTemperature: ");
-        DEBUG(t);
-        DEBUGLN(" *C ");
-
-        if (dhtIndex < DHT_MAX)
-        {
-            dhtIndex++;
-        }
-        else
-        {
-            DEBUGLN("publish dht");
-
-            float humidityAvg = humidity / (dhtIndex + 1);
-            float temperatureAvg = temperature / (dhtIndex + 1);
-
-            String message;
-            message.reserve(50);
-            message.concat("{\"humidity\": ");
-            message.concat(humidityAvg);
-            message.concat(", \"temperature\": ");
-            message.concat(temperatureAvg);
-            message.concat("}");
-
-            char buffer[50];
-            message.toCharArray(buffer, 50);
-            mqtt->publish("dht", buffer);
-
-            humidity = 0;
-            temperature = 0;
-            dhtIndex = 0;
-        }
-    }
-}
-#endif
-
 long lastBlink;
 long lastDisconnect;
 bool statusBlink = true;
@@ -517,7 +455,7 @@ void loop(void)
     }
     
 #ifdef DHT_PIN
-    processDht();
+    dhtReader.loop();
 #endif
 
     if (!WifiAdapter.isAccessPoint())
