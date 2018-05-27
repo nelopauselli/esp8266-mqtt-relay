@@ -3,9 +3,10 @@
 
 #include <Arduino.h>
 #include "Logger.h"
-#include "MqttAdapter.h"
+#include "Subject.h"
+#include "LightEventArgs.h"
 
-class Light
+class Light : public Subject<LightEventArgs>
 {
   public:
 	Light(uint8_t pin, const char *name)
@@ -56,18 +57,16 @@ class Light
 
 	void publishState()
 	{
-		if (_mqtt != NULL)
-		{
-			int state = !digitalRead(_pin);
-			if (state)
-			{
-				_mqtt->publish(_name, "state on");
-			}
-			else
-			{
-				_mqtt->publish(_name, "state off");
-			}
-		}
+		int state = !digitalRead(_pin);
+
+		LightEventArgs args;
+
+		if (state)
+			args.state = "state on";
+		else
+			args.state = "state off";
+
+		notify(args);
 	}
 
 	void loop()
@@ -84,15 +83,9 @@ class Light
 			publishState();
 	}
 
-	void attach(MqttAdapter *mqtt)
-	{
-		_mqtt = mqtt;
-	}
-
   private:
 	const char *_name;
 	uint8_t _pin;
-	MqttAdapter *_mqtt;
 };
 
 #endif

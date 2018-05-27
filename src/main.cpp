@@ -88,6 +88,7 @@ Relay *relay2;
 Button *button1;
 Button *button2;
 #ifdef LIGHT_PIN
+#include "Observers/LightMqttObserver.cpp"
 Light *light;
 #endif
 #ifdef LDR_PIN
@@ -259,7 +260,7 @@ bool initMQTT()
         dhtReader.attach("dht => mqtt", new DhtMqttObserver(mqtt));
 #endif
 #ifdef LIGHT_PIN
-        light->attach(mqtt);
+        light->attach("light => mqtt", new LightMqttObserver(mqtt));
 #endif
 #ifdef LDR_PIN
         ldr.attach("ldr => mqtt", new LdrMqttObserver(mqtt));
