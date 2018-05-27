@@ -56,6 +56,7 @@ HardwareMonitoring hardwareMonitoring;
 #define BUTTON2 D2
 #define LED_ACTIVITY D4
 #define DHT_PIN D1
+#define LDR_PIN A0
 #define LIGHT_PIN LED_BUILTIN
 #elif ARDUINO_ESP8266_ESP01
 #define RELAY1 1
@@ -88,6 +89,11 @@ Button *button1;
 Button *button2;
 #ifdef LIGHT_PIN
 Light *light;
+#endif
+#ifdef LDR_PIN
+#include "Ldr.h"
+#include "Observers/LdrMqttObserver.cpp"
+Ldr ldr(LDR_PIN);
 #endif
 
 TelnetServer *telnetServer = NULL;
@@ -255,6 +261,9 @@ bool initMQTT()
 #ifdef LIGHT_PIN
         light->attach(mqtt);
 #endif
+#ifdef LDR_PIN
+        ldr.attach("ldr => mqtt", new LdrMqttObserver(mqtt));
+#endif
 
         return reconnect();
     }
@@ -390,6 +399,10 @@ void loop(void)
 
 #ifdef DHT_PIN
     dhtReader.loop();
+#endif
+
+#ifdef LDR_PIN
+    ldr.loop();
 #endif
 
     if (!WifiAdapter.isAccessPoint())
