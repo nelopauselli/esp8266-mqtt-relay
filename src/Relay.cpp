@@ -102,14 +102,33 @@ class Relay : public Subject<RelayEventArgs>
 			else
 			{
 				unsigned long minutesLeft = secondsLeft / 60;
+				unsigned long hours = minutesLeft / 60;
+				unsigned long minutes = minutesLeft % 60;
+				uint8_t seconds = secondsLeft % 60;
 
 				char buffer[10];
-				ltoa(minutesLeft, buffer, 10);
 
 				char message[24];
 				strcpy(message, "turned on for ");
+
+				if (hours > 0)
+				{
+					ltoa(hours, buffer, 10);
+					strcat(message, buffer);
+					strcat(message, "h ");
+				}
+
+				if (minutes < 10)
+					strcat(message, "0");
+				ltoa(minutes, buffer, 10);
 				strcat(message, buffer);
-				strcat(message, " minutes");
+				strcat(message, "m ");
+
+				if (seconds < 10)
+					strcat(message, "0");
+				ltoa(seconds, buffer, 10);
+				strcat(message, buffer);
+				strcat(message, "s ");
 
 				args.state = message;
 			}
