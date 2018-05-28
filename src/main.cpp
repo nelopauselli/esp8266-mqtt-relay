@@ -260,7 +260,7 @@ bool initMQTT()
         dhtReader.attach("dht => mqtt", new DhtMqttObserver(mqtt));
 #endif
 #ifdef LIGHT_PIN
-        light->attach("light => mqtt", new LightMqttObserver(mqtt));
+        light->attach("light => mqtt", new LightMqttObserver(light, mqtt));
 #endif
 #ifdef LDR_PIN
         ldr.attach("ldr => mqtt", new LdrMqttObserver(mqtt));

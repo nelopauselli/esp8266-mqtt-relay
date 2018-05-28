@@ -4,24 +4,26 @@
 #include "Logger.h"
 #include "Observer.h"
 #include "MqttAdapter.h"
+#include "Light.cpp"
 #include "LightEventArgs.h"
 
 class LightMqttObserver : public Observer<LightEventArgs>
 {
   public:
-    LightMqttObserver(MqttAdapter *mqtt)
+    LightMqttObserver(Light *light, MqttAdapter *mqtt)
     {
         _mqtt = mqtt;
+        _topic = light->name();
     }
 
     void notify(LightEventArgs args) override
     {
-        DEBUGLN("publish light");
-        _mqtt->publish("ldr", args.state);
+        _mqtt->publish(_topic, args.state);
     }
 
   private:
     MqttAdapter *_mqtt = NULL;
+    const char *_topic = NULL;
 };
 
 #endif
