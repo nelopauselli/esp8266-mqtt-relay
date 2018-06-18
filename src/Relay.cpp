@@ -73,6 +73,7 @@ class Relay : public Subject<RelayEventArgs>
 		DEBUGLN(" OFF");
 
 		_startAt = 0L;
+		_extra = 0L;
 
 		digitalWrite(_pin, HIGH);
 
