@@ -17,13 +17,9 @@ class LdrMqttObserver : public Observer<LdrEventArgs>
     void notify(LdrEventArgs args) override
     {
         DEBUGLN("publish ldr");
-        String message;
-        message.reserve(50);
-        message.concat("{\"value\": ");
-        message.concat(args.value);
-        message.concat("}");
-        char buffer[50];
-        message.toCharArray(buffer, 50);
+       
+        char buffer[4];
+        itoa(args.value, buffer, 10);
         
         _mqtt->publish("ldr", buffer);
     }

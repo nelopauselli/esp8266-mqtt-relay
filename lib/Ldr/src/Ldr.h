@@ -13,7 +13,7 @@ class Ldr : public Subject<LdrEventArgs>
 
   private:
 	uint8_t _pin;
-	int _last = -1;
+	unsigned long _lastRead = -1;
 };
 
 #endif
