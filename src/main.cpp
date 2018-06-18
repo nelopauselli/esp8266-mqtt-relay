@@ -89,6 +89,7 @@ Button *button1;
 Button *button2;
 #ifdef LIGHT_PIN
 #include "Observers/LightMqttObserver.cpp"
+#include "Observers/MqttLightObserver.cpp"
 Light *light;
 #endif
 #ifdef LDR_PIN
@@ -188,12 +189,6 @@ void callback(char *topic, byte *payload, unsigned int length)
         device_search();
     }
 
-#ifdef LIGHT_PIN
-    else if (strcmp(topic + strlen(topic) - strlen("/light"), "/light") == 0)
-    {
-        light->invoke(message);
-    }
-#endif
     else if (strcmp(topic + strlen(topic) - strlen("/restart"), "/restart") == 0)
     {
         const char *chipId = String(ESP.getChipId()).c_str();
@@ -261,6 +256,7 @@ bool initMQTT()
 #endif
 #ifdef LIGHT_PIN
         light->attach("light => mqtt", new LightMqttObserver(light, mqtt));
+        mqtt->attach("mqtt => light", new MqttLightObserver(light));
 #endif
 #ifdef LDR_PIN
         ldr.attach("ldr => mqtt", new LdrMqttObserver(mqtt));
