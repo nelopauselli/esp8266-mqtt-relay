@@ -1,4 +1,7 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WiFi.h>
 
 #define HARDWARE_MONITORING
 
@@ -130,39 +133,77 @@ void initHardware()
  * MQTT
  * 
  **/
-void device_search()
+void device_register()
 {
-    char *topicBase = Settings.readMqttTopicBase();
+    StaticJsonBuffer<2048> jsonBuffer;
+    JsonObject &root = jsonBuffer.createObject();
 
-    char definition[512];
-    strcpy(definition, "{\"topics\":[");
+    root["name"] = Settings.readDeviceName();
+    root["topic"] = Settings.readMqttTopicBase();
 
-    if (strlen(topicBase) > 0)
+    JsonArray &metrics = root.createNestedArray("metrics");
+
+    JsonObject &metric0 = metrics.createNestedObject();
+    metric0["name"] = "memory free";
+    metric0["topic"] = "device/memoryfree";
+    metric0["unit"] = "bytes";
+
+    JsonObject &metric1 = metrics.createNestedObject();
+    metric1["name"] = "temperature";
+    metric1["topic"] = "dht";
+    metric1["property"] = "temperature";
+    metric1["unit"] = "°C";
+
+    JsonObject &metric2 = metrics.createNestedObject();
+    metric2["name"] = "humidity";
+    metric2["topic"] = "dht";
+    metric2["property"] = "humidity";
+    metric2["unit"] = "%";
+
+    JsonObject &metric3 = metrics.createNestedObject();
+    metric3["name"] = "luz";
+    metric3["topic"] = "ldr";
+    metric3["unit"] = "L";
+
+    JsonArray &components = root.createNestedArray("components");
+
+    JsonObject &component0 = components.createNestedObject();
+    component0["name"] = relay1->name();
+    component0["topic"] = relay1->name();
+    JsonArray &component0actions = component0.createNestedArray("actions");
+    component0actions.add("turn on");
+    component0actions.add("turn off");
+    component0actions.add("+30m");
+    component0actions.add("+1h");
+
+    JsonObject &component1 = components.createNestedObject();
+    component1["name"] = relay2->name();
+    component1["topic"] = relay2->name();
+    JsonArray &component1actions = component1.createNestedArray("actions");
+    component1actions.add("turn on");
+    component1actions.add("turn off");
+    component1actions.add("+30m");
+    component1actions.add("+1h");
+
+    root.prettyPrintTo(Serial);
+
+    WiFiClient client; //Declare object of class HTTPClient
+
+    IPAddress host(192,168,1,105);
+    int port = 3000;
+    if (client.connect(host, port))
     {
-        strcat(definition, "\"");
-        strcat(definition, topicBase);
-        strcat(definition, "/relay1/status\",");
-        strcat(definition, "\"");
-        strcat(definition, topicBase);
-        strcat(definition, "/relay1/on\",");
-        strcat(definition, "\"");
-        strcat(definition, topicBase);
-        strcat(definition, "/relay1/off\",");
-        strcat(definition, "\"");
-        strcat(definition, topicBase);
-        strcat(definition, "/relay2/status\",");
-        strcat(definition, "\"");
-        strcat(definition, topicBase);
-        strcat(definition, "/relay2/on\",");
-        strcat(definition, "\"");
-        strcat(definition, topicBase);
-        strcat(definition, "/relay2/off\"");
+        client.println("POST /api/device HTTP/1.1");
+        client.println("Content-Type: application/json");
+        client.print("Content-Length: ");
+        client.println(root.measureLength());
+        client.println("Connection: close");
+        client.println();
+
+        root.printTo(client);
+
+        client.flush();
     }
-    strcat(definition, "]}");
-
-    mqtt->publish("devices/found", definition);
-
-    delete topicBase;
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -186,7 +227,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     if (strcmp(topic, "/devices/search") == 0)
     {
-        device_search();
+        device_register();
     }
 
     else if (strcmp(topic + strlen(topic) - strlen("/restart"), "/restart") == 0)
@@ -326,6 +367,9 @@ void setup()
 #ifdef LED_ACTIVITY
     digitalWrite(LED_ACTIVITY, LOW);
 #endif
+
+    Settings.writeServerUrl("http://192.168.1.105:3000/api/device");
+    device_register();
 }
 
 void loopMQTT()

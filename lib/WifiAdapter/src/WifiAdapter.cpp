@@ -27,8 +27,7 @@ void WifiAdapter_t::addAP(char *connectionString)
 
 bool WifiAdapter_t::connect()
 {
-	DEBUG(_wifiMulti.count());
-	DEBUGLN(" WiFi configured. connecting...");
+	DEBUGLN("WiFi configured. connecting...");
 
 	WiFi.mode(WIFI_STA);
 	int i = 0;
