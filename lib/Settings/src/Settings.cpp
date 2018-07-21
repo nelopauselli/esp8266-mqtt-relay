@@ -22,6 +22,10 @@
 #define BUTTON_NAME_END_1 319
 #define BUTTON_NAME_START_2 320
 #define BUTTON_NAME_END_2 334
+#define HOST_ADDRESS_START 335
+#define HOST_ADDRESS_END 338
+#define HOST_PORT_START 339
+#define HOST_PORT_END 340
 
 SettingsClass::SettingsClass()
 {
@@ -116,6 +120,39 @@ char *SettingsClass::readButtonName(int index)
 		return read(BUTTON_NAME_START_2, BUTTON_NAME_END_2);
 }
 
+void SettingsClass::writeHostAddress(IPAddress value)
+{
+	EEPROM.write(HOST_ADDRESS_START, value[0]);
+	EEPROM.write(HOST_ADDRESS_START + 1, value[1]);
+	EEPROM.write(HOST_ADDRESS_START + 2, value[2]);
+	EEPROM.write(HOST_ADDRESS_START + 3, value[3]);
+}
+
+void SettingsClass::readHostAddress(IPAddress& host)
+{
+	host[0] = EEPROM.read(HOST_ADDRESS_START);
+	host[1] = EEPROM.read(HOST_ADDRESS_START + 1);
+	host[2] = EEPROM.read(HOST_ADDRESS_START + 2);
+	host[3] = EEPROM.read(HOST_ADDRESS_START + 3);
+}
+
+void SettingsClass::writeHostPort(int value)
+{
+	byte two = (value & 0xFF);
+	byte one = ((value >> 8) & 0xFF);
+
+	EEPROM.write(HOST_PORT_START, two);
+	EEPROM.write(HOST_PORT_START + 1, one);
+}
+
+int SettingsClass::readHostPort()
+{
+	int two = EEPROM.read(HOST_PORT_START);
+	int one = EEPROM.read(HOST_PORT_START + 1);
+
+	return ((two << 0) & 0xFF) + ((one << 8) & 0xFFFF);
+}
+
 void SettingsClass::write(int from, int to, char *value)
 {
 	if (strlen(value) > to - from)
@@ -170,7 +207,7 @@ char *SettingsClass::read(int from, int to)
 
 	DEBUG("Value readed: ");
 	DEBUGLN(buffer);
-	
+
 	return buffer;
 }
 

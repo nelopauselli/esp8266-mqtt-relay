@@ -2,6 +2,7 @@
 #define SETTINGS_CLASS
 
 #include <Arduino.h>
+#include <IPAddress.h>
 
 class SettingsClass
 {
@@ -21,6 +22,12 @@ class SettingsClass
 	char *readRelayName(int index);
 	void writeButtonName(int index, char *value);
 	char *readButtonName(int index);
+
+	void writeHostAddress(IPAddress value);
+	void readHostAddress(IPAddress& host);
+
+	void writeHostPort(int value);
+	int readHostPort();
 
   private:
 	void write(int from, int to, char *value);

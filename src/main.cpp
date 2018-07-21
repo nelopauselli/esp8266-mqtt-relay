@@ -58,8 +58,8 @@ HardwareMonitoring hardwareMonitoring;
 #define BUTTON1 D3
 #define BUTTON2 D2
 #define LED_ACTIVITY D4
-#define DHT_PIN D1
-#define LDR_PIN A0
+//#define DHT_PIN D1
+//#define LDR_PIN A0
 #define LIGHT_PIN LED_BUILTIN
 #elif ARDUINO_ESP8266_ESP01
 #define RELAY1 1
@@ -148,6 +148,7 @@ void device_register()
     metric0["topic"] = "device/memoryfree";
     metric0["unit"] = "bytes";
 
+#ifdef DHT_PIN
     JsonObject &metric1 = metrics.createNestedObject();
     metric1["name"] = "temperature";
     metric1["topic"] = "dht";
@@ -159,11 +160,14 @@ void device_register()
     metric2["topic"] = "dht";
     metric2["property"] = "humidity";
     metric2["unit"] = "%";
+#endif
 
+#ifdef LDR_PIN
     JsonObject &metric3 = metrics.createNestedObject();
     metric3["name"] = "luz";
     metric3["topic"] = "ldr";
     metric3["unit"] = "L";
+#endif
 
     JsonArray &components = root.createNestedArray("components");
 
@@ -189,8 +193,13 @@ void device_register()
 
     WiFiClient client; //Declare object of class HTTPClient
 
-    IPAddress host(192,168,1,105);
-    int port = 3000;
+    IPAddress host;
+    Settings.readHostAddress(host);
+    Serial.print("host: ");
+    Serial.println(host);
+    int port = Settings.readHostPort();
+    Serial.print("port: ");
+    Serial.println(port);
     if (client.connect(host, port))
     {
         client.println("POST /api/device HTTP/1.1");
@@ -368,7 +377,6 @@ void setup()
     digitalWrite(LED_ACTIVITY, LOW);
 #endif
 
-    Settings.writeServerUrl("http://192.168.1.105:3000/api/device");
     device_register();
 }
 
