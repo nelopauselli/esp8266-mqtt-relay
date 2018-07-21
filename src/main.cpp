@@ -195,11 +195,7 @@ void device_register()
 
     IPAddress host;
     Settings.readHostAddress(host);
-    Serial.print("host: ");
-    Serial.println(host);
     int port = Settings.readHostPort();
-    Serial.print("port: ");
-    Serial.println(port);
     if (client.connect(host, port))
     {
         client.println("POST /api/device HTTP/1.1");
