@@ -35,7 +35,7 @@ class HardwareMonitoringMqttObserver : public Observer<HardwareMonitoringArgs>
 
   private:
     MqttAdapter *_mqtt = NULL;
-    long _last = 0;
+    unsigned long _last = 0;
     uint32 _min = 0xFFFFFFFF;
 };
 

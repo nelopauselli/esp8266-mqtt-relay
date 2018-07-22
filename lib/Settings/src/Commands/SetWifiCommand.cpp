@@ -16,7 +16,6 @@ class SetWifiCommand : public Command
         {
             DEBUGLN("Configurando WiFi");
 
-            char *value = new char[strlen(line) - strlen(key) + 1];
             Splitter splitter = Splitter(line + strlen(key));
 
             char *index = splitter.getNextChunk(' ');

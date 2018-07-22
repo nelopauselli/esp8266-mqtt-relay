@@ -421,7 +421,7 @@ void processTelnet()
         telnetServer->process();
 }
 
-long lastBlink;
+unsigned long lastBlink;
 long lastDisconnect;
 bool statusBlink = true;
 

@@ -16,7 +16,6 @@ class SetRelayNameCommand : public Command
         {
             DEBUGLN("Configurando nombre del relay");
 
-            char *value = new char[strlen(line) - strlen(key) + 1];
             Splitter splitter = Splitter(line + strlen(key));
 
             char *index = splitter.getNextChunk(' ');
