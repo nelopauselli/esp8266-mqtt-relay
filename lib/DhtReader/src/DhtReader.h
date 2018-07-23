@@ -27,7 +27,7 @@ class DhtReader : public Subject<DhtReadEventArgs>
     float _temperature;
     int _count = 0;
 
-    int _timeSinceLastRead = 0;
+    unsigned long _timeSinceLastRead = 0;
 };
 
 #endif

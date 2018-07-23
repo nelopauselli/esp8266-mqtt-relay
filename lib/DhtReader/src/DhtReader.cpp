@@ -15,12 +15,9 @@ void DhtReader::loop()
     // Report every 2 seconds.
     if (millis() > _timeSinceLastRead + DHT_MINIMUM_SAMPLING_PERIOD)
     {
-        uint32_t start = micros();
         int chk = _type == DHT_11
                       ? _dht.read11(_pin)
                       : _dht.read22(_pin);
-
-        uint32_t stop = micros();
 
         _timeSinceLastRead = millis();
 
