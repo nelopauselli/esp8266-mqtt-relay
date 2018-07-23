@@ -15,8 +15,9 @@ public:
   void setCallback(MQTT_CALLBACK_SIGNATURE);
   bool connected();
 
+  void subscribeGeneralTopics();
   void subscribeDeviceTopic();
-  void subscribe(const char *topic);
+  
   void publish(const char *subtopic, const char *message);
 
   void loop();

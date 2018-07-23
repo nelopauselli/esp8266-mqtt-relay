@@ -54,30 +54,6 @@ char *mqttPassword = NULL;
 HardwareMonitoring hardwareMonitoring;
 #endif
 
-#ifdef ARDUINO_ESP8266_NODEMCU
-#define RELAY1 D5 //LED_BUILTIN
-#define RELAY2 D6
-#define BUTTON1 D3
-#define BUTTON2 D2
-#define LED_ACTIVITY D4
-//#define DHT_PIN D1
-//#define LDR_PIN A0
-#define LIGHT_PIN LED_BUILTIN
-#elif ARDUINO_ESP8266_ESP01
-#define RELAY1 1
-#define RELAY2 2
-#define BUTTON1 0
-#define BUTTON2 3
-#elif ESP8266_D1_MINI
-#define RELAY1 D5
-#define RELAY2 D6
-#define BUTTON1 D3
-#define BUTTON2 D2
-#define LED_ACTIVITY D7
-#define DHT_PIN D1
-#define LIGHT_PIN D4
-#endif
-
 #ifdef DHT_PIN
 #include "DhtReader.h"
 #include "Observers/DhtMqttObserver.cpp"
@@ -90,8 +66,15 @@ DhtReader dhtReader(DHT_PIN, DHT_22);
 
 Relay *relay1;
 Relay *relay2;
+#ifdef BUTTON1
 Button *button1;
+#endif
+#ifdef BUTTON2
 Button *button2;
+#endif
+#ifdef BUTTON3
+Button *button3;
+#endif
 #ifdef LIGHT_PIN
 #include "Observers/LightMqttObserver.cpp"
 #include "Observers/MqttLightObserver.cpp"
@@ -110,7 +93,6 @@ void initHardware()
 {
 #ifdef LED_ACTIVITY
     pinMode(LED_ACTIVITY, OUTPUT);
-    digitalWrite(LED_ACTIVITY, HIGH);
 #endif
 
     DEBUGLN("Init relays...");
@@ -120,10 +102,19 @@ void initHardware()
 
     DEBUGLN("Init buttons...");
 
+#ifdef BUTTON1
     button1 = new Button(BUTTON1, Settings.readButtonName(1));
     button1->attach("button-1 => relay-1", new ButtonRelayObserver(relay1));
+#endif
+
+#ifdef BUTTON2
     button2 = new Button(BUTTON2, Settings.readButtonName(2));
     button2->attach("button-2 => relay-2", new ButtonRelayObserver(relay2));
+#endif
+
+#ifdef BUTTON3
+    button3 = new Button(BUTTON3, Settings.readButtonName(3));
+#endif
 
 #ifdef LIGHT_PIN
     light = new Light(LIGHT_PIN, "luz");
@@ -190,6 +181,15 @@ void device_register()
     component1actions.add("turn off");
     component1actions.add("+30m");
     component1actions.add("+1h");
+
+#ifdef LIGHT_PIN
+    JsonObject &component2 = components.createNestedObject();
+    component2["name"] = light->name();
+    component2["topic"] = light->name();
+    JsonArray &component2actions = component2.createNestedArray("actions");
+    component2actions.add("turn on");
+    component2actions.add("turn off");
+#endif
 
     root.prettyPrintTo(Serial);
 
@@ -298,10 +298,19 @@ bool initMQTT()
 
         relay1->attach("relay-1 => mqtt", new RelayMqttObserver(relay1, mqtt));
         mqtt->attach("mqtt => relay-1", new MqttRelayObserver(relay1));
+#ifdef BUTTON1
         button1->attach("button-1 => mqtt", new ButtonMqttObserver(button1, mqtt));
+#endif
+
         relay2->attach("relay-2 => mqtt", new RelayMqttObserver(relay2, mqtt));
         mqtt->attach("mqtt => relay-2", new MqttRelayObserver(relay2));
+#ifdef BUTTON2
         button2->attach("button-2 => mqtt", new ButtonMqttObserver(button2, mqtt));
+#endif
+
+#ifdef BUTTON3
+        button3->attach("button-3 => mqtt", new ButtonMqttObserver(button3, mqtt));
+#endif
 
 #ifdef HARDWARE_MONITORING
         hardwareMonitoring.attach("hardware-monitoring => mqtt", new HardwareMonitoringMqttObserver(mqtt));
@@ -330,7 +339,7 @@ void publishResetReason()
     mqtt->publish("device/reset", buffer);
 }
 
-unsigned int blinkDelay;
+unsigned int blinkDelay = 500;
 
 void setup()
 {
@@ -342,8 +351,16 @@ void setup()
 
     initHardware();
 
+#ifdef LED_ACTIVITY
+    digitalWrite(LED_ACTIVITY, LOW);
+#endif
+
     DEBUG("ChipID: ");
     DEBUGLN(ESP.getChipId());
+
+    // IPAddress host(192, 168, 1, 10);
+    // Settings.writeHostAddress(host);
+    // Settings.writeHostPort(80);
 
     WifiAdapter.addAP(Settings.readWifi(1));
     WifiAdapter.addAP(Settings.readWifi(2));
@@ -357,7 +374,7 @@ void setup()
         DEBUG("MAC: ");
         DEBUGLN(WiFi.macAddress());
 
-        blinkDelay = 1000;
+        blinkDelay = 0;
     }
     else
     {
@@ -382,7 +399,7 @@ void setup()
     DEBUGLN("ready");
 
 #ifdef LED_ACTIVITY
-    digitalWrite(LED_ACTIVITY, LOW);
+    digitalWrite(LED_ACTIVITY, HIGH);
 #endif
 
     device_register();
@@ -424,8 +441,15 @@ void loopOTA()
 
 void processButtons()
 {
+#ifdef BUTTON1
     button1->process();
+#endif
+#ifdef BUTTON2
     button2->process();
+#endif
+#ifdef BUTTON3
+    button3->process();
+#endif
 }
 
 void processRelays()
@@ -479,7 +503,6 @@ void loop(void)
     if (!WifiAdapter.isAccessPoint())
     {
         loopMQTT();
-
         loopOTA();
     }
     else
@@ -498,7 +521,7 @@ void loop(void)
     }
 
 #ifdef LED_ACTIVITY
-    if (lastBlink + blinkDelay < millis())
+    if (blinkDelay > 0 && lastBlink + blinkDelay < millis())
     {
         statusBlink = !statusBlink;
         digitalWrite(LED_ACTIVITY, statusBlink);

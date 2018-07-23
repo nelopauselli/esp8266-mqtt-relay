@@ -63,9 +63,18 @@ bool MqttAdapter::connect(const char *userName, const char *password)
     }
   }
 
+  subscribeGeneralTopics();
   subscribeDeviceTopic();
 
   return true;
+}
+
+void MqttAdapter::subscribeGeneralTopics()
+{
+  char *topic = "/devices/search";
+  DEBUG("subscribe to ");
+  DEBUGLN(topic);
+  client.subscribe(topic);
 }
 
 void MqttAdapter::subscribeDeviceTopic()
@@ -95,11 +104,6 @@ void MqttAdapter::disconnect()
 void MqttAdapter::loop()
 {
   client.loop();
-}
-
-void MqttAdapter::subscribe(const char *topic)
-{
-  client.subscribe(topic);
 }
 
 void MqttAdapter::publish(const char *subtopic, const char *message)
