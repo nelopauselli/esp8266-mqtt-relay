@@ -321,7 +321,7 @@ void publishResetReason()
     mqtt->publish("device/reset", buffer);
 }
 
-int blinkDelay;
+unsigned int blinkDelay;
 
 void setup()
 {

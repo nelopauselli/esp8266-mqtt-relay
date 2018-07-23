@@ -45,7 +45,7 @@ class Button : public Subject<ButtonEventArgs>
 	uint8_t _pin;
 	const char *_name;
 
-	long _lastPush;
+	unsigned long _lastPush;
 };
 
 #endif

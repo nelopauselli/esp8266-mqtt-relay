@@ -102,7 +102,7 @@ void MqttAdapter::subscribe(const char *topic)
   client.subscribe(topic);
 }
 
-void MqttAdapter::publish(const char *subtopic, char *message)
+void MqttAdapter::publish(const char *subtopic, const char *message)
 {
   if (client.connected())
   {

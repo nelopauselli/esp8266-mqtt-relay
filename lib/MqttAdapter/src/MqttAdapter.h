@@ -17,7 +17,7 @@ public:
 
   void subscribeDeviceTopic();
   void subscribe(const char *topic);
-  void publish(const char *subtopic, char *message);
+  void publish(const char *subtopic, const char *message);
 
   void loop();
 
