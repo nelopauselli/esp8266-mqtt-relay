@@ -17,16 +17,8 @@ class UpdateFromOTACommand : public Command
             socket->write("OK\r\n");
             delay(100);
 
-            char *url = Settings.readOtaUrl();
+            HTTPUpdateResult ret = update();
 
-            socket->write("Searching firmware updates in ");
-            socket->write(url);
-            socket->write("\r\n");
-            socket->write("MD5 Checksum: ");
-            socket->write(ESP.getSketchMD5().c_str());
-            socket->write("\r\n");
-
-            t_httpUpdate_return ret = ESPhttpUpdate.update(url);
             switch (ret)
             {
             case HTTP_UPDATE_FAILED:
@@ -46,13 +38,17 @@ class UpdateFromOTACommand : public Command
                 break;
             }
 
-            delete url;
-
             return true;
         }
         return false;
     }
 
+    HTTPUpdateResult update()
+    {
+        char *url = Settings.readOtaUrl();
+        HTTPUpdateResult ret = ESPhttpUpdate.update(url);
+        delete url;
+    }
     void help(WiFiClient *socket) override
     {
         socket->write("UPDATE FORM OTA: check for update\r\n");

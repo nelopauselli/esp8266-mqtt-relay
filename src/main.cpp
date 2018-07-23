@@ -8,9 +8,11 @@
 #ifdef RELEASE
 #define RELAY_DURATION 60
 #define RELAY_NOTIFICATION_INTERVAL 300
+#define OTA_INTERVAL 60 * 1000
 #else
 #define RELAY_DURATION 3
 #define RELAY_NOTIFICATION_INTERVAL 10
+#define OTA_INTERVAL 20 * 1000
 #endif
 
 extern "C"
@@ -345,6 +347,9 @@ void setup()
 
         traceMemoryLeak("publish", &publishResetReason);
 
+        DEBUG("MAC: ");
+        DEBUGLN(WiFi.macAddress());
+
         blinkDelay = 1000;
     }
     else
@@ -393,6 +398,20 @@ void loopMQTT()
             }
         }
         mqtt->loop();
+    }
+}
+
+unsigned long lastOTA = 0;
+void loopOTA()
+{
+    if (lastOTA + OTA_INTERVAL < millis())
+    {
+        DEBUGLN("Searching updates");
+        UpdateFromOTACommand cmd;
+        cmd.update();
+
+        DEBUGLN("no updates");
+        lastOTA = millis();
     }
 }
 
@@ -453,6 +472,8 @@ void loop(void)
     if (!WifiAdapter.isAccessPoint())
     {
         loopMQTT();
+
+        loopOTA();
     }
     else
     {
