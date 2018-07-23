@@ -3,7 +3,7 @@
 
 struct RelayEventArgs
 {
-    char *state;
+    const char *state;
 };
 
 #endif

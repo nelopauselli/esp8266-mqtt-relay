@@ -3,7 +3,7 @@
 
 struct LightEventArgs
 {
-    char *state;
+    const char *state;
 };
 
 #endif

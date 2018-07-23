@@ -48,6 +48,8 @@ class UpdateFromOTACommand : public Command
         char *url = Settings.readOtaUrl();
         HTTPUpdateResult ret = ESPhttpUpdate.update(url);
         delete url;
+        
+        return ret;
     }
     void help(WiFiClient *socket) override
     {

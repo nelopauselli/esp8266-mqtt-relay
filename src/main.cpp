@@ -23,8 +23,8 @@ extern "C"
 #include "Logger.h"
 
 #include "MqttAdapter.h"
-char *mqttUserName = "";
-char *mqttPassword = "";
+char *mqttUserName = NULL;
+char *mqttPassword = NULL;
 
 #include "Logger.h"
 
@@ -193,11 +193,16 @@ void device_register()
 
     root.prettyPrintTo(Serial);
 
-    WiFiClient client; //Declare object of class HTTPClient
+    WiFiClient client;
 
     IPAddress host;
     Settings.readHostAddress(host);
     int port = Settings.readHostPort();
+    DEBUG("Pubish device in ");
+    DEBUG(host);
+    DEBUG(":");
+    DEBUGLN(port);
+
     if (client.connect(host, port))
     {
         client.println("POST /api/device HTTP/1.1");
@@ -210,6 +215,8 @@ void device_register()
         root.printTo(client);
 
         client.flush();
+
+        delay(10);
     }
 }
 
