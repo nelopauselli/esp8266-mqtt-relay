@@ -126,6 +126,8 @@ void SettingsClass::writeHostAddress(IPAddress value)
 	EEPROM.write(HOST_ADDRESS_START + 1, value[1]);
 	EEPROM.write(HOST_ADDRESS_START + 2, value[2]);
 	EEPROM.write(HOST_ADDRESS_START + 3, value[3]);
+
+	EEPROM.commit();
 }
 
 void SettingsClass::readHostAddress(IPAddress& host)
@@ -143,6 +145,8 @@ void SettingsClass::writeHostPort(int value)
 
 	EEPROM.write(HOST_PORT_START, two);
 	EEPROM.write(HOST_PORT_START + 1, one);
+
+	EEPROM.commit();
 }
 
 int SettingsClass::readHostPort()
