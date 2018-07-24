@@ -169,6 +169,8 @@ class Relay : public Subject<RelayEventArgs>
 			on();
 		else if (strcmp(payload, "turn off") == 0)
 			off();
+		else if (strcmp(payload, "toggle") == 0)
+			toggle();
 		else if (strcmp(payload, "state") == 0)
 			publishState();
 		else if (strcmp(payload, "+30m") == 0)
