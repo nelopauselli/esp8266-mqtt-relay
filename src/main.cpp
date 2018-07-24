@@ -126,7 +126,7 @@ void initHardware()
  * MQTT
  * 
  **/
-void device_register()
+void device_register(char *target)
 {
     StaticJsonBuffer<2048> jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
@@ -196,8 +196,22 @@ void device_register()
     WiFiClient client;
 
     IPAddress host;
-    Settings.readHostAddress(host);
-    int port = Settings.readHostPort();
+    int port;
+    if (target == NULL)
+    {
+        Settings.readHostAddress(host);
+        port = Settings.readHostPort();
+    }
+    else
+    {
+        Splitter splitter(target);
+        host[0] = atoi(splitter.getNextChunk('.'));
+        host[1] = atoi(splitter.getNextChunk('.'));
+        host[2] = atoi(splitter.getNextChunk('.'));
+        host[3] = atoi(splitter.getNextChunk(':'));
+        port = atoi(splitter.getNextChunk('\0'));
+    }
+
     DEBUG("Pubish device in ");
     DEBUG(host);
     DEBUG(":");
@@ -241,7 +255,7 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     if (strcmp(topic, "/devices/search") == 0)
     {
-        device_register();
+        device_register(message);
     }
 
     else if (strcmp(topic + strlen(topic) - strlen("/restart"), "/restart") == 0)
@@ -402,7 +416,7 @@ void setup()
     digitalWrite(LED_ACTIVITY, HIGH);
 #endif
 
-    device_register();
+    device_register(NULL);
 }
 
 void loopMQTT()
