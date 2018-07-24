@@ -46,7 +46,6 @@ char *mqttPassword = NULL;
 #include "Observers/ButtonRelayObserver.cpp"
 #include "Observers/ButtonMqttObserver.cpp"
 #include "Button.cpp"
-#include "Light.cpp"
 
 #ifdef HARDWARE_MONITORING
 #include "HardwareMonitoring.h"
@@ -76,9 +75,10 @@ Button *button2;
 Button *button3;
 #endif
 #ifdef LIGHT_PIN
+#include "Light.cpp"
 #include "Observers/LightMqttObserver.cpp"
 #include "Observers/MqttLightObserver.cpp"
-Light *light;
+Light *light = NULL;
 #endif
 #ifdef LDR_PIN
 #include "Ldr.h"
@@ -191,7 +191,9 @@ void device_register(char *target)
     component2actions.add("turn off");
 #endif
 
+#ifndef RELEASE
     root.prettyPrintTo(Serial);
+#endif
 
     WiFiClient client;
 
@@ -348,9 +350,40 @@ bool initMQTT()
 void publishResetReason()
 {
     String reason = ESP.getResetReason();
-    char buffer[50];
-    reason.toCharArray(buffer, 50);
-    mqtt->publish("device/reset", buffer);
+    char buffer1[50];
+    reason.toCharArray(buffer1, 50);
+    mqtt->publish("device/reset", buffer1);
+
+    String info = ESP.getResetInfo();
+
+    WiFiClient client;
+
+    IPAddress host(192, 168, 1, 105);
+    int port = 3000;
+
+    // Settings.readHostAddress(host);
+    // port = Settings.readHostPort();
+
+    DEBUG("Pubish device in ");
+    DEBUG(host);
+    DEBUG(":");
+    DEBUGLN(port);
+
+    if (client.connect(host, port))
+    {
+        client.println("POST /api/device/resetInfo HTTP/1.1");
+        client.println("Content-Type: text/plain");
+        client.print("Content-Length: ");
+        client.println(info.length());
+        client.println("Connection: close");
+        client.println();
+
+        client.print(info);
+
+        client.flush();
+
+        delay(10);
+    }
 }
 
 unsigned int blinkDelay = 500;
