@@ -57,12 +57,12 @@ class Subject
     }
     void notify(TEventArgs args)
     {
-        DEBUG("notifing: ");
+        //DEBUG("notifing: ");
         Observer<TEventArgs> *current = _observers;
         while (current != NULL)
         {
-            DEBUG("\t");
-            DEBUGLN(current->id);
+            //DEBUG("\t");
+            //DEBUGLN(current->id);
 
             current->notify(args);
             current = current->next;

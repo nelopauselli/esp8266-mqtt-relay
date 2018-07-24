@@ -230,8 +230,6 @@ void device_register(char *target)
 
         root.printTo(client);
 
-        client.flush();
-
         delay(10);
     }
 }
@@ -247,19 +245,10 @@ void callback(char *topic, byte *payload, unsigned int length)
     message[length] = '\0';
     DEBUGLN(message);
 
-    char *subtopic = new char[strlen(topic) - strlen(mqtt->roottopic()) + 1];
-    strcpy(subtopic, topic + strlen(mqtt->roottopic()));
-
-    MqttEventArgs args;
-    args.topic = subtopic;
-    args.payload = message;
-    mqtt->notify(args);
-
     if (strcmp(topic, "/devices/search") == 0)
     {
         device_register(message);
     }
-
     else if (strcmp(topic + strlen(topic) - strlen("/restart"), "/restart") == 0)
     {
         const char *chipId = String(ESP.getChipId()).c_str();
@@ -272,8 +261,34 @@ void callback(char *topic, byte *payload, unsigned int length)
             mqtt->publish("error", "invalid chip ID");
         }
     }
+    else if (strlen(topic) > strlen(mqtt->roottopic()))
+    {
+        char *subtopic = new char[strlen(topic) - strlen(mqtt->roottopic()) + 1];
+        strcpy(subtopic, topic + strlen(mqtt->roottopic()));
+
+        MqttEventArgs args;
+        args.topic = subtopic;
+        args.payload = message;
+        mqtt->notify(args);
+
+        delete subtopic;
+    }
+    else
+    {
+        DEBUG("[ERROR] Invalid topic '");
+        DEBUG(topic);
+        DEBUG("' (");
+        DEBUG(strlen(topic));
+        DEBUG(") ");
+        DEBUG(", root topic is '");
+        DEBUG(mqtt->roottopic());
+        DEBUG("' (");
+        DEBUG(strlen(mqtt->roottopic()));
+        DEBUGLN(")");
+
+    }
+
     delete message;
-    delete subtopic;
 }
 
 bool reconnect()
