@@ -1,7 +1,11 @@
 #ifndef HARDWARE_MONITORING_MQTT_OBSERVER_CLASS
 #define HARDWARE_MONITORING_MQTT_OBSERVER_CLASS
 
+#ifdef RELEASE
 #define HARDWARE_MONITORING_INTERVAL 10000
+#else
+#define HARDWARE_MONITORING_INTERVAL 1000
+#endif
 
 #include "Observer.h"
 #include "HardwareMonitoringArgs.h"

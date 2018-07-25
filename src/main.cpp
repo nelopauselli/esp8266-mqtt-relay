@@ -131,8 +131,10 @@ void device_register(char *target)
     StaticJsonBuffer<2048> jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
 
-    root["name"] = Settings.readDeviceName();
-    root["topic"] = Settings.readMqttTopicBase();
+    char *deviceName = Settings.readDeviceName();
+    char *topic = Settings.readMqttTopicBase();
+    root["name"] = deviceName;
+    root["topic"] = topic;
 
     JsonArray &metrics = root.createNestedArray("metrics");
 
@@ -193,9 +195,8 @@ void device_register(char *target)
 
 #ifndef RELEASE
     root.prettyPrintTo(Serial);
+    delay(100);
 #endif
-
-    WiFiClient client;
 
     IPAddress host;
     int port;
@@ -207,11 +208,16 @@ void device_register(char *target)
     else
     {
         Splitter splitter(target);
-        host[0] = atoi(splitter.getNextChunk('.'));
-        host[1] = atoi(splitter.getNextChunk('.'));
-        host[2] = atoi(splitter.getNextChunk('.'));
-        host[3] = atoi(splitter.getNextChunk(':'));
-        port = atoi(splitter.getNextChunk('\0'));
+        for (int i = 0; i < 4; i++)
+        {
+            char *b = splitter.getNextChunk(i < 3 ? '.' : ':');
+            host[i] = atoi(b);
+            delete b;
+        }
+
+        char *buffer = splitter.getNextChunk('\0');
+        port = atoi(buffer);
+        delete buffer;
     }
 
     DEBUG("Pubish device in ");
@@ -219,6 +225,7 @@ void device_register(char *target)
     DEBUG(":");
     DEBUGLN(port);
 
+    WiFiClient client;
     if (client.connect(host, port))
     {
         client.println("POST /api/device HTTP/1.1");
@@ -230,8 +237,12 @@ void device_register(char *target)
 
         root.printTo(client);
 
-        delay(10);
+        delay(100);
     }
+
+    jsonBuffer.clear();
+    delete deviceName;
+    delete topic;
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -285,7 +296,6 @@ void callback(char *topic, byte *payload, unsigned int length)
         DEBUG("' (");
         DEBUG(strlen(mqtt->roottopic()));
         DEBUGLN(")");
-
     }
 
     delete message;
@@ -373,11 +383,14 @@ void publishResetReason()
 
     WiFiClient client;
 
+#ifndef RELEASE
     IPAddress host(192, 168, 1, 105);
     int port = 3000;
-
-    // Settings.readHostAddress(host);
-    // port = Settings.readHostPort();
+#else
+    IPAddress host;
+    Settings.readHostAddress(host);
+    int port = Settings.readHostPort();
+#endif
 
     DEBUG("Pubish device in ");
     DEBUG(host);
