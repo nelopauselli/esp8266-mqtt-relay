@@ -131,10 +131,34 @@ void device_register(char *target)
     StaticJsonBuffer<2048> jsonBuffer;
     JsonObject &root = jsonBuffer.createObject();
 
+    char *wifi0 = Settings.readWifi(0);
+    Splitter splitter0(wifi0);
+    char *wifi0SSID =  splitter0.getNextChunk('@');
+    root["wifi0"] =wifi0SSID;
+
+    char *wifi1 = Settings.readWifi(1);
+    Splitter splitter1(wifi1);
+    char *wifi1SSID = splitter1.getNextChunk('@');
+    root["wifi1"] = wifi1SSID;
+
     char *deviceName = Settings.readDeviceName();
-    char *topic = Settings.readMqttTopicBase();
     root["name"] = deviceName;
-    root["topic"] = topic;
+
+    char *mqttConnectionString = Settings.readMqttConnectionString();
+    root["mqttConnectionString"] = mqttConnectionString;
+
+    char *mqttTopicBase = Settings.readMqttTopicBase();
+    root["mqttTopicBase"] = mqttTopicBase;
+
+    IPAddress serverAddress;
+    Settings.readHostAddress(serverAddress);
+    root["serverAddress"] = serverAddress.toString();
+
+    int serverPort = Settings.readHostPort();
+    root["serverPort"] = serverPort;
+
+    char *otaPath = Settings.readOtaUrl();
+    root["otaPath"] = otaPath;
 
     JsonArray &metrics = root.createNestedArray("metrics");
 
@@ -166,31 +190,67 @@ void device_register(char *target)
 
     JsonArray &components = root.createNestedArray("components");
 
+#ifdef RELAY1
     JsonObject &component0 = components.createNestedObject();
+    component0["type"] = "Relay";
     component0["name"] = relay1->name();
-    component0["topic"] = relay1->name();
     JsonArray &component0actions = component0.createNestedArray("actions");
     component0actions.add("turn on");
     component0actions.add("turn off");
     component0actions.add("+30m");
     component0actions.add("+1h");
+#endif
 
+#ifdef RELAY2
     JsonObject &component1 = components.createNestedObject();
+    component1["type"] = "Relay";
     component1["name"] = relay2->name();
-    component1["topic"] = relay2->name();
     JsonArray &component1actions = component1.createNestedArray("actions");
     component1actions.add("turn on");
     component1actions.add("turn off");
     component1actions.add("+30m");
     component1actions.add("+1h");
+#endif
 
 #ifdef LIGHT_PIN
     JsonObject &component2 = components.createNestedObject();
+    component2["type"] = "Light";
     component2["name"] = light->name();
-    component2["topic"] = light->name();
     JsonArray &component2actions = component2.createNestedArray("actions");
     component2actions.add("turn on");
     component2actions.add("turn off");
+#endif
+
+#ifdef BUTTON1
+    JsonObject &component3 = components.createNestedObject();
+    component3["type"] = "Button";
+    component3["name"] = button1->name();
+    JsonArray &component3events = component3.createNestedArray("events");
+    component3events.add("button pressed");
+#endif
+
+#ifdef BUTTON2
+    JsonObject &component4 = components.createNestedObject();
+    component4["type"] = "Button";
+    component4["name"] = button2->name();
+    JsonArray &component4events = component4.createNestedArray("events");
+    component4events.add("button pressed");
+#endif
+
+#ifdef BUTTON3
+    JsonObject &component5 = components.createNestedObject();
+    component5["type"] = "Button";
+    component5["name"] = button3->name();
+    JsonArray &component5events = component5.createNestedArray("events");
+    component5events.add("button pressed");
+#endif
+
+#ifdef BUTTON4
+    JsonObject &component6 = components.createNestedObject();
+    component6["type"] = "Button";
+    component6["name"] = button4->name();
+    JsonArray &component6events = component6.createNestedArray("events");
+    component6events.add("button pressed");
 #endif
 
 #ifndef RELEASE
@@ -241,8 +301,14 @@ void device_register(char *target)
     }
 
     jsonBuffer.clear();
+    delete wifi0;
+    delete wifi0SSID;
+    delete wifi1;
+    delete wifi1SSID;
     delete deviceName;
-    delete topic;
+    delete mqttConnectionString;
+    delete mqttTopicBase;
+    delete otaPath;
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
