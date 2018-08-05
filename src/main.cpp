@@ -63,6 +63,9 @@ DhtReader dhtReader(DHT_PIN, DHT_22);
 #endif
 #endif
 
+#include <WebServer.cpp>
+WebServer webServer;
+
 Relay *relay1;
 Relay *relay2;
 #ifdef BUTTON1
@@ -133,8 +136,8 @@ void device_register(char *target)
 
     char *wifi0 = Settings.readWifi(0);
     Splitter splitter0(wifi0);
-    char *wifi0SSID =  splitter0.getNextChunk('@');
-    root["wifi0"] =wifi0SSID;
+    char *wifi0SSID = splitter0.getNextChunk('@');
+    root["wifi0"] = wifi0SSID;
 
     char *wifi1 = Settings.readWifi(1);
     Splitter splitter1(wifi1);
@@ -527,6 +530,8 @@ void setup()
         blinkDelay = 250;
     }
 
+    webServer.setup();
+
     telnetServer = new TelnetServer(23);
     telnetServer->add(new SetWifiCommand());
     telnetServer->add(new SetMqttCommand());
@@ -625,6 +630,8 @@ void loop(void)
     traceFreeMemory();
 
     processTelnet();
+
+    webServer.loop();
 
     traceMemoryLeak("processButtons", &processButtons);
 

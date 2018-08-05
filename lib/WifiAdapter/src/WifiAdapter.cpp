@@ -98,6 +98,8 @@ void WifiAdapter_t::startAsAccessPoint(const char *ssid)
 
 	DEBUG("IP address: ");
 	DEBUGLN(getIP());
+
+
 }
 
 // Return RSSI or 0 if target SSID not found
